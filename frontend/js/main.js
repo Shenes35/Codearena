@@ -2,9 +2,10 @@
    main.js — Index page logic
    ════════════════════════════════════════════════════════ */
 
-// Change this to your Render URL when deployed, e.g:
-// const API_BASE = "https://codearena-api.onrender.com";
-const API_BASE = "http://localhost:5000";
+// Local development: http://localhost:5000
+// Production (Render): https://codearena-r5yq.onrender.com
+const API_BASE = "https://codearena-r5yq.onrender.com";
+
 
 
 // ── Toast utility ─────────────────────────────────────────
