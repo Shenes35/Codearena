@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: codearena-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: FLASK_SECRET_KEY
+        value: codearena_secret_2026
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0
