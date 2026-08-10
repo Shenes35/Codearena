@@ -1,0 +1,126 @@
+[
+  {
+    "id": "q1",
+    "title": "Two Sum",
+    "description": "Given an array of integers `nums` and an integer `target`, return the indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nReturn the answer in ascending order.",
+    "input_format": "Line 1: Space-separated integers (the array)\nLine 2: The target integer",
+    "output_format": "Two space-separated indices (ascending order)",
+    "examples": [
+      {
+        "input": "2 7 11 15\n9",
+        "output": "0 1"
+      },
+      {
+        "input": "3 2 4\n6",
+        "output": "1 2"
+      }
+    ],
+    "test_cases": [
+      {
+        "input": "2 7 11 15\n9",
+        "expected": "0 1"
+      },
+      {
+        "input": "3 2 4\n6",
+        "expected": "1 2"
+      },
+      {
+        "input": "3 3\n6",
+        "expected": "0 1"
+      }
+    ],
+    "difficulty": "Easy",
+    "time_limit": 1800,
+    "created_at": "2026-08-10T11:00:00Z"
+  },
+  {
+    "id": "q2",
+    "title": "Reverse String",
+    "description": "Write a program that reads a string and prints it reversed.\n\nDo not use any built-in reverse functions.",
+    "input_format": "A single line containing a string (no spaces)",
+    "output_format": "The reversed string on a single line",
+    "examples": [
+      {
+        "input": "hello",
+        "output": "olleh"
+      },
+      {
+        "input": "world",
+        "output": "dlrow"
+      }
+    ],
+    "test_cases": [
+      {
+        "input": "hello",
+        "expected": "olleh"
+      },
+      {
+        "input": "world",
+        "expected": "dlrow"
+      },
+      {
+        "input": "abcdef",
+        "expected": "fedcba"
+      }
+    ],
+    "difficulty": "Easy",
+    "time_limit": 1200,
+    "created_at": "2026-08-10T11:00:00Z"
+  },
+  {
+    "id": "q3",
+    "title": "Fibonacci Sequence",
+    "description": "Given a number N, print the first N terms of the Fibonacci sequence.\n\nThe sequence starts with 0 and 1. Each subsequent term is the sum of the two preceding ones.\n\nPrint all terms space-separated on a single line.",
+    "input_format": "A single integer N (1 ≤ N ≤ 20)",
+    "output_format": "N space-separated Fibonacci numbers",
+    "examples": [
+      {
+        "input": "5",
+        "output": "0 1 1 2 3"
+      },
+      {
+        "input": "1",
+        "output": "0"
+      }
+    ],
+    "test_cases": [
+      {
+        "input": "5",
+        "expected": "0 1 1 2 3"
+      },
+      {
+        "input": "1",
+        "expected": "0"
+      },
+      {
+        "input": "7",
+        "expected": "0 1 1 2 3 5 8"
+      }
+    ],
+    "difficulty": "Medium",
+    "time_limit": 1500,
+    "created_at": "2026-08-10T11:00:00Z"
+  },
+  {
+    "id": "691629da",
+    "title": "Double",
+    "description": "1",
+    "input_format": "2",
+    "output_format": "3",
+    "examples": [
+      {
+        "input": "s",
+        "output": "e"
+      }
+    ],
+    "test_cases": [
+      {
+        "input": "5",
+        "expected": "2"
+      }
+    ],
+    "difficulty": "Medium",
+    "time_limit": 1800,
+    "created_at": "2026-08-10T11:29:32.024412+00:00"
+  }
+]

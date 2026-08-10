@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeArena — Practice & Master Coding</title>
+  <meta name="description" content="An interactive coding platform to practice problems, run code, and track your submissions." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="index.html">
+      <div class="brand-icon">⚡</div>
+      CodeArena
+    </a>
+    <div class="navbar-links">
+      <a class="nav-link active" href="index.html">Problems</a>
+      <a class="nav-link" href="admin.html">Admin</a>
+      <button class="btn btn-primary btn-sm" id="btn-set-username">
+        👤 <span id="username-display">Set Username</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Username Modal ──────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="username-modal">
+    <div class="modal-box">
+      <div class="modal-title">👋 Welcome to CodeArena</div>
+      <div class="modal-subtitle">Enter your name to track your submissions.</div>
+      <div class="form-group" style="margin-bottom:20px">
+        <label class="form-label" for="username-input">Your Name</label>
+        <input type="text" id="username-input" class="form-control" placeholder="e.g. Alice" maxlength="40" autocomplete="off" />
+      </div>
+      <button class="btn btn-primary" id="btn-save-username" style="width:100%">Let's Go →</button>
+    </div>
+  </div>
+
+  <!-- ── Main ────────────────────────────────────────────── -->
+  <main class="container">
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1 class="hero-title">Sharpen Your Coding Skills</h1>
+      <p class="hero-subtitle">Write code, run it against real test cases, and submit only when you're confident.</p>
+    </section>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value" id="stat-total">–</div>
+        <div class="stat-label">Problems</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-easy">–</div>
+        <div class="stat-label">Easy</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-medium">–</div>
+        <div class="stat-label">Medium</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-hard">–</div>
+        <div class="stat-label">Hard</div>
+      </div>
+    </div>
+
+    <!-- Filters + Search -->
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="All">All</button>
+      <button class="filter-btn" data-filter="Easy">Easy</button>
+      <button class="filter-btn" data-filter="Medium">Medium</button>
+      <button class="filter-btn" data-filter="Hard">Hard</button>
+      <input type="text" class="search-input" id="search-input" placeholder="Search problems..." />
+    </div>
+
+    <!-- Question Grid -->
+    <div class="question-grid" id="question-grid">
+      <!-- Populated by main.js -->
+      <div class="skeleton" style="height:160px;"></div>
+      <div class="skeleton" style="height:160px;"></div>
+      <div class="skeleton" style="height:160px;"></div>
+    </div>
+
+  </main>
+
+  <!-- ── Toast container ──────────────────────────────────── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

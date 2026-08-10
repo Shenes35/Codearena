@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeArena — Admin Panel</title>
+  <meta name="description" content="Admin panel to create and manage coding problems on CodeArena." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="index.html">
+      <div class="brand-icon">⚡</div>
+      CodeArena
+    </a>
+    <div class="navbar-links">
+      <a class="nav-link" href="index.html">Problems</a>
+      <a class="nav-link active" href="admin.html">Admin</a>
+    </div>
+  </nav>
+
+  <!-- ── Admin Auth Gate ─────────────────────────────────── -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-box">
+      <div class="modal-title">🔐 Admin Login</div>
+      <div class="modal-subtitle">Enter your admin password to access the panel.</div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label" for="admin-password-input">Password</label>
+        <input type="password" id="admin-password-input" class="form-control" placeholder="••••••••" autocomplete="current-password" />
+        <div id="auth-error" style="color:var(--red);font-size:12px;margin-top:4px" class="hidden">Incorrect password.</div>
+      </div>
+      <button class="btn btn-primary" id="btn-admin-login" style="width:100%">Login →</button>
+    </div>
+  </div>
+
+  <!-- ── Main Admin Panel ─────────────────────────────────── -->
+  <main class="container" id="admin-main" style="display:none;padding-top:24px;padding-bottom:48px">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:var(--text-bright)">Admin Panel</h1>
+        <p style="font-size:13px;color:var(--text-secondary)">Create and manage coding problems.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-logout">Logout</button>
+    </div>
+
+    <div class="admin-layout">
+
+      <!-- ── Create Question Form ──────────────────────────── -->
+      <div class="admin-sidebar">
+        <div class="card">
+          <div class="card-header">✏️ New Question</div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+
+            <div class="form-group">
+              <label class="form-label" for="q-title">Title *</label>
+              <input type="text" id="q-title" class="form-control" placeholder="e.g. Two Sum" maxlength="100" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="q-difficulty">Difficulty</label>
+              <select id="q-difficulty" class="form-control">
+                <option value="Easy">Easy</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="q-time-limit">Time Limit (seconds)</label>
+              <input type="number" id="q-time-limit" class="form-control" value="1800" min="60" max="7200" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="q-description">Description *</label>
+              <textarea id="q-description" class="form-control" rows="5" placeholder="Describe the problem clearly…"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="q-input-format">Input Format</label>
+              <textarea id="q-input-format" class="form-control" rows="3" placeholder="Describe the input format…"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="q-output-format">Output Format</label>
+              <textarea id="q-output-format" class="form-control" rows="2" placeholder="Describe the expected output format…"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Examples -->
+        <div class="card">
+          <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+            💡 Examples (shown to user)
+            <button class="btn btn-ghost btn-sm" id="btn-add-example">+ Add</button>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <div id="examples-list">
+              <!-- Populated by admin.js -->
+            </div>
+            <p id="no-examples-msg" style="color:var(--text-dim);font-size:12px;text-align:center">
+              No examples yet. Click + Add.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Right: Test Cases + Questions List ──────────────── -->
+      <div class="admin-main">
+
+        <!-- Test Cases -->
+        <div class="card">
+          <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+            🧪 Test Cases * (hidden from users)
+            <button class="btn btn-primary btn-sm" id="btn-add-tc">+ Add Test Case</button>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:0 0 4px">
+              <span class="form-label">Input (stdin)</span>
+              <span class="form-label">Expected Output</span>
+              <span></span>
+            </div>
+            <div id="test-cases-list" style="display:flex;flex-direction:column;gap:8px">
+              <!-- Populated by admin.js -->
+            </div>
+            <p id="no-tc-msg" style="color:var(--text-dim);font-size:12px;text-align:center">
+              Add at least one test case.
+            </p>
+          </div>
+        </div>
+
+        <!-- Submission buttons -->
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" id="btn-create-question" style="flex:1">
+            🚀 Create Question
+          </button>
+          <button class="btn btn-ghost" id="btn-reset-form">Reset</button>
+        </div>
+
+        <div id="form-feedback" class="hidden" style="padding:12px 16px;border-radius:var(--radius);font-size:13px;font-weight:500"></div>
+
+        <!-- Existing Questions List -->
+        <div class="card">
+          <div class="card-header">📋 All Questions</div>
+          <div class="card-body">
+            <div class="questions-list" id="questions-list">
+              <div class="skeleton" style="height:48px"></div>
+              <div class="skeleton" style="height:48px;margin-top:8px"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Toast container ──────────────────────────────────── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
