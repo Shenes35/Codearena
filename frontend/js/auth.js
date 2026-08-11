@@ -10,6 +10,14 @@
 const GOOGLE_CLIENT_ID = "1097614216156-pqra9j1mv8hp2d56efut6evnoq9nj1e6.apps.googleusercontent.com";
 // ──────────────────────────────────────────────────────────
 
+// ── Admin email — only this account sees the Admin panel ──
+const ADMIN_EMAIL = "sheness35@gmail.com";
+
+function isAdmin() {
+  const user = getUser();
+  return user && user.email === ADMIN_EMAIL;
+}
+
 const AUTH_KEY = "codearena_user";
 
 /* ── Storage helpers ────────────────────────────────────── */
@@ -55,6 +63,7 @@ window.handleGoogleCredential = handleGoogleCredential;
 function _onSignIn(user) {
   _updateNavbar(user);
   _hideSignInModal();
+  _updateAdminLink(user);
   // Dispatch custom event for pages that need to react
   window.dispatchEvent(new CustomEvent("codearena:signin", { detail: user }));
 }
@@ -82,6 +91,18 @@ function _updateNavbar(user) {
       Sign in with Google
     </button>`;
     document.getElementById("btn-google-signin")?.addEventListener("click", openSignInModal);
+  }
+  _updateAdminLink(user);
+}
+
+/* ── Show/hide Admin link based on email ─────────────────── */
+function _updateAdminLink(user) {
+  const adminLink = document.getElementById("admin-nav-link");
+  if (!adminLink) return;
+  if (user && user.email === ADMIN_EMAIL) {
+    adminLink.style.display = "";
+  } else {
+    adminLink.style.display = "none";
   }
 }
 
@@ -127,6 +148,7 @@ function signOut() {
     google.accounts.id.disableAutoSelect();
   }
   _updateNavbar(null);
+  _updateAdminLink(null);
   window.dispatchEvent(new CustomEvent("codearena:signout"));
 }
 
@@ -174,4 +196,4 @@ function _escHtml(str) {
 }
 
 /* ── Export to global scope ──────────────────────────────── */
-window.CA_Auth = { getUser, setUser, clearUser, signOut, requireLogin, openSignInModal };
+window.CA_Auth = { getUser, setUser, clearUser, signOut, requireLogin, openSignInModal, isAdmin };

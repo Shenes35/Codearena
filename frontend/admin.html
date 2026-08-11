@@ -21,7 +21,7 @@
     </a>
     <div class="navbar-links">
       <a class="nav-link" href="index.html">Problems</a>
-      <a class="nav-link active" href="admin.html">Admin</a>
+      <a class="nav-link active" id="admin-nav-link" href="admin.html">Admin</a>
       <!-- Auth chip — populated by auth.js -->
       <div class="auth-chip" id="auth-chip"></div>
     </div>
@@ -167,6 +167,23 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script src="js/auth.js"></script>
+  <!-- Guard: redirect non-admins to home -->
+  <script>
+    (function() {
+      // Wait for auth.js to load, then check
+      const ADMIN = "sheness35@gmail.com";
+      try {
+        const stored = localStorage.getItem("codearena_user");
+        const user = stored ? JSON.parse(stored) : null;
+        if (!user || user.email !== ADMIN) {
+          alert("Access denied. Admin only.");
+          window.location.href = "index.html";
+        }
+      } catch(e) {
+        window.location.href = "index.html";
+      }
+    })();
+  </script>
   <script src="js/admin.js"></script>
 </body>
 </html>
