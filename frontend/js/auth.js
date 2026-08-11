@@ -15,7 +15,8 @@ const ADMIN_EMAIL = "shenesz13@gmail.com";
 
 function isAdmin() {
   const user = getUser();
-  return user && user.email === ADMIN_EMAIL;
+  if (user) console.log("[CodeArena] Signed in as:", user.email);
+  return user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }
 
 const AUTH_KEY = "codearena_user";
@@ -97,12 +98,33 @@ function _updateNavbar(user) {
 
 /* ── Show/hide Admin link based on email ─────────────────── */
 function _updateAdminLink(user) {
-  const adminLink = document.getElementById("admin-nav-link");
-  if (!adminLink) return;
-  if (user && user.email === ADMIN_EMAIL) {
-    adminLink.style.display = "";
+  let adminLink = document.getElementById("admin-nav-link");
+  
+  if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    if (!adminLink) {
+      // Find navbar container to insert Admin link
+      const linksContainer = document.querySelector(".navbar-links");
+      if (linksContainer) {
+        adminLink = document.createElement("a");
+        adminLink.className = "nav-link";
+        adminLink.id = "admin-nav-link";
+        adminLink.href = "admin.html";
+        adminLink.textContent = "Admin";
+        // Insert right before auth chip or at the end
+        const chip = document.getElementById("auth-chip");
+        if (chip) {
+          linksContainer.insertBefore(adminLink, chip);
+        } else {
+          linksContainer.appendChild(adminLink);
+        }
+      }
+    } else {
+      adminLink.style.display = "";
+    }
   } else {
-    adminLink.style.display = "none";
+    if (adminLink) {
+      adminLink.style.display = "none";
+    }
   }
 }
 
