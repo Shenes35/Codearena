@@ -126,11 +126,21 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 document.getElementById("search-input").addEventListener("input", applyFilters);
 
 function applyFilters() {
-  const query = document.getElementById("search-input").value.toLowerCase();
-  const filtered = allQuestions.filter(q => {
+  const query = document.getElementById("search-input").value.trim().toLowerCase();
+  const cleanQuery = query.replace(/^#/, "");
+
+  const filtered = allQuestions.filter((q, index) => {
     const matchDiff = activeFilter === "All" || q.difficulty === activeFilter;
-    const matchSearch = !query || q.title.toLowerCase().includes(query) || (q.description || "").toLowerCase().includes(query);
-    return matchDiff && matchSearch;
+    
+    if (!query) return matchDiff;
+
+    const problemNumber = String(index + 1);
+    const matchNumber = problemNumber === cleanQuery || `#${problemNumber}` === query;
+    const matchTitle = q.title.toLowerCase().includes(query);
+    const matchDesc = (q.description || "").toLowerCase().includes(query);
+    const matchId = (q.id || "").toLowerCase().includes(cleanQuery);
+
+    return matchDiff && (matchNumber || matchTitle || matchDesc || matchId);
   });
   renderGrid(filtered);
 }
