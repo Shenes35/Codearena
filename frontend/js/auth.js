@@ -11,7 +11,7 @@ const GOOGLE_CLIENT_ID = "1097614216156-pqra9j1mv8hp2d56efut6evnoq9nj1e6.apps.go
 // ──────────────────────────────────────────────────────────
 
 // ── Admin email — only this account sees the Admin panel ──
-const ADMIN_EMAIL = "sheness35@gmail.com";
+const ADMIN_EMAIL = "shenesz13@gmail.com";
 
 function isAdmin() {
   const user = getUser();
