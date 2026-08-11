@@ -79,19 +79,28 @@ function renderGrid(questions) {
     return;
   }
 
-  grid.innerHTML = questions.map((q, i) => `
+  grid.innerHTML = questions.map((q, i) => {
+    const isMcq = q.type === "mcq";
+    const typeBadge = isMcq ? `<span class="badge" style="background:rgba(197,134,192,0.15);color:var(--purple)">MCQ</span>` : `<span class="badge" style="background:rgba(86,156,214,0.15);color:var(--accent)">Coding</span>`;
+    const metaInfo = isMcq ? `<span>🔘 MCQ Quiz</span>` : `<span>🧪 ${q.test_case_count ?? 0} test cases</span>`;
+
+    return `
     <a class="question-card" href="editor.html?id=${q.id}" id="qcard-${q.id}">
       <div class="question-card-header">
         <span class="question-number">#${i + 1}</span>
-        <span class="badge ${difficultyBadgeClass(q.difficulty)}">${q.difficulty}</span>
+        <div style="display:flex;gap:6px">
+          ${typeBadge}
+          <span class="badge ${difficultyBadgeClass(q.difficulty)}">${q.difficulty}</span>
+        </div>
       </div>
       <div class="question-title">${escHtml(q.title)}</div>
       <div class="question-card-desc">${escHtml(truncate(q.description, 120))}</div>
       <div class="question-meta">
-        <span>🧪 ${q.test_case_count ?? 0} test cases</span>
+        ${metaInfo}
         ${q.time_limit ? `<span>⏱ ${formatTime(q.time_limit)}</span>` : ""}
       </div>
-    </a>`).join("");
+    </a>`;
+  }).join("");
 }
 
 function escHtml(str) {

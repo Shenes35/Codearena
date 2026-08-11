@@ -285,10 +285,75 @@ async function loadQuestion() {
     diffEl.textContent = questionData.difficulty || "Medium";
     diffEl.className = `badge badge-${(questionData.difficulty || "medium").toLowerCase()}`;
 
-    document.getElementById("problem-tc-count").textContent = `${questionData.test_case_count || 0} test cases`;
+    const isMcq = questionData.type === "mcq";
+
+    document.getElementById("problem-tc-count").textContent = isMcq ? "MCQ Quiz" : `${questionData.test_case_count || 0} test cases`;
     document.getElementById("problem-description").textContent = questionData.description || "";
-    document.getElementById("problem-input-format").textContent = questionData.input_format || "—";
-    document.getElementById("problem-output-format").textContent = questionData.output_format || "—";
+    
+    if (isMcq) {
+      document.getElementById("lbl-input-format").style.display = "none";
+      document.getElementById("problem-input-format").style.display = "none";
+      document.getElementById("lbl-output-format").style.display = "none";
+      document.getElementById("problem-output-format").style.display = "none";
+
+      // Render MCQ Options in right panel editor
+      const editorPanel = document.querySelector(".editor-panel");
+      if (editorPanel) {
+        editorPanel.innerHTML = `
+          <div style="padding:32px;max-width:640px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:20px">
+            <h2 style="font-size:18px;font-weight:700;color:var(--text-bright)">Select your answer:</h2>
+            <div id="mcq-options-group" style="display:flex;flex-direction:column;gap:12px">
+              ${(questionData.options || []).map((opt, idx) => `
+                <label style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all 0.2s ease" class="mcq-opt-label">
+                  <input type="radio" name="user_mcq_answer" value="${idx}" style="width:18px;height:18px;cursor:pointer" />
+                  <span style="font-size:14px;color:var(--text-primary)">${escHtml(opt)}</span>
+                </label>
+              `).join("")}
+            </div>
+            <div style="display:flex;gap:12px;margin-top:12px">
+              <button class="btn btn-primary btn-lg" id="btn-submit-mcq" style="flex:1">Submit Answer</button>
+            </div>
+            <div id="mcq-result" class="hidden" style="padding:16px;border-radius:var(--radius);font-weight:600;font-size:14px"></div>
+          </div>
+        `;
+
+        document.getElementById("btn-submit-mcq")?.addEventListener("click", async () => {
+          const selected = document.querySelector('input[name="user_mcq_answer"]:checked')?.value;
+          if (selected === undefined) {
+            showToast("warn", "Please select an answer!");
+            return;
+          }
+          try {
+            const res = await fetch(`${API_BASE}/questions/${questionId}/verify-mcq`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ selected_option: parseInt(selected) }),
+            });
+            const ans = await res.json();
+            const resDiv = document.getElementById("mcq-result");
+            resDiv.classList.remove("hidden");
+            if (ans.correct) {
+              resDiv.style.background = "rgba(78,201,176,0.15)";
+              resDiv.style.color = "var(--green)";
+              resDiv.style.border = "1px solid var(--green)";
+              resDiv.textContent = "✅ Correct Answer! Great job.";
+              showToast("success", "Correct! 🎉");
+            } else {
+              resDiv.style.background = "rgba(244,71,71,0.15)";
+              resDiv.style.color = "var(--red)";
+              resDiv.style.border = "1px solid var(--red)";
+              resDiv.textContent = `❌ Incorrect. Correct option was: ${questionData.options[ans.correct_option] || 'Option ' + (ans.correct_option + 1)}`;
+              showToast("error", "Wrong Answer ❌");
+            }
+          } catch(err) {
+            showToast("error", "Network error", err.message);
+          }
+        });
+      }
+    } else {
+      document.getElementById("problem-input-format").textContent = questionData.input_format || "—";
+      document.getElementById("problem-output-format").textContent = questionData.output_format || "—";
+    }
 
     // Examples tab
     const examples = questionData.examples || [];
@@ -312,9 +377,11 @@ async function loadQuestion() {
     if (questionData.time_limit) startTimer(questionData.time_limit);
     else document.getElementById("timer-widget").style.display = "none";
 
-    // Init Monaco
-    const lang = document.getElementById("language-select").value;
-    initMonaco(lang);
+    // Init Monaco (if coding)
+    if (!isMcq) {
+      const lang = document.getElementById("language-select").value;
+      initMonaco(lang);
+    }
 
   } catch (err) {
     document.getElementById("problem-loading").innerHTML = `

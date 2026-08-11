@@ -61,6 +61,14 @@
           <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
 
             <div class="form-group">
+              <label class="form-label" for="q-type">Question Type *</label>
+              <select id="q-type" class="form-control" style="font-weight:600;color:var(--accent)">
+                <option value="coding">💻 Coding Challenge</option>
+                <option value="mcq">🔘 Multiple Choice (MCQ)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
               <label class="form-label" for="q-title">Title *</label>
               <input type="text" id="q-title" class="form-control" placeholder="e.g. Two Sum" maxlength="100" />
             </div>
@@ -84,21 +92,23 @@
               <textarea id="q-description" class="form-control" rows="5" placeholder="Describe the problem clearly…"></textarea>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="q-input-format">Input Format</label>
-              <textarea id="q-input-format" class="form-control" rows="3" placeholder="Describe the input format…"></textarea>
-            </div>
+            <div class="coding-field">
+              <div class="form-group">
+                <label class="form-label" for="q-input-format">Input Format</label>
+                <textarea id="q-input-format" class="form-control" rows="3" placeholder="Describe the input format…"></textarea>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label" for="q-output-format">Output Format</label>
-              <textarea id="q-output-format" class="form-control" rows="2" placeholder="Describe the expected output format…"></textarea>
+              <div class="form-group" style="margin-top:14px">
+                <label class="form-label" for="q-output-format">Output Format</label>
+                <textarea id="q-output-format" class="form-control" rows="2" placeholder="Describe the expected output format…"></textarea>
+              </div>
             </div>
 
           </div>
         </div>
 
-        <!-- Examples -->
-        <div class="card">
+        <!-- Examples (Coding only) -->
+        <div class="card coding-field">
           <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
             💡 Examples (shown to user)
             <button class="btn btn-ghost btn-sm" id="btn-add-example">+ Add</button>
@@ -114,11 +124,27 @@
         </div>
       </div>
 
-      <!-- ── Right: Test Cases + Questions List ──────────────── -->
+      <!-- ── Right: Test Cases (Coding) / MCQ Options (MCQ) + Questions List ──────────────── -->
       <div class="admin-main">
 
-        <!-- Test Cases -->
-        <div class="card">
+        <!-- MCQ Options Section -->
+        <div class="card mcq-field hidden">
+          <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+            🔘 Multiple Choice Options *
+            <button class="btn btn-primary btn-sm" id="btn-add-mcq-opt">+ Add Option</button>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">
+              Enter option text and select the radio button next to the correct answer:
+            </div>
+            <div id="mcq-options-list" style="display:flex;flex-direction:column;gap:8px">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Cases (Coding Section) -->
+        <div class="card coding-field">
           <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
             🧪 Test Cases * (hidden from users)
             <button class="btn btn-primary btn-sm" id="btn-add-tc">+ Add Test Case</button>

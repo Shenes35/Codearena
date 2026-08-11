@@ -169,19 +169,66 @@ function collectExamples() {
   return exs;
 }
 
+// ── Question Type Toggle ───────────────────────────────────
+const qTypeSelect = document.getElementById("q-type");
+qTypeSelect.addEventListener("change", () => {
+  const isMcq = qTypeSelect.value === "mcq";
+  document.querySelectorAll(".coding-field").forEach(el => el.classList.toggle("hidden", isMcq));
+  document.querySelectorAll(".mcq-field").forEach(el => el.classList.toggle("hidden", !isMcq));
+});
+
+// ── MCQ Options ────────────────────────────────────────────
+let mcqOptionCount = 0;
+
+function addMcqOption(val = "", isCorrect = false) {
+  mcqOptionCount++;
+  const id = `mcq-opt-${mcqOptionCount}`;
+  const row = document.createElement("div");
+  row.className = "test-case-row";
+  row.id = id;
+  row.style.gridTemplateColumns = "auto 1fr auto";
+  row.style.alignItems = "center";
+  row.innerHTML = `
+    <input type="radio" name="correct_mcq_radio" ${isCorrect ? "checked" : ""} style="width:18px;height:18px;cursor:pointer" title="Mark as correct answer" />
+    <input type="text" class="form-control" placeholder="Option text…" value="${escHtml(val)}" data-role="option-text" />
+    <button class="btn btn-danger btn-sm" onclick="removeRow('${id}')" title="Remove">✕</button>`;
+
+  document.getElementById("mcq-options-list").appendChild(row);
+}
+
+document.getElementById("btn-add-mcq-opt")?.addEventListener("click", () => addMcqOption());
+
+// Initialize 4 default MCQ options
+addMcqOption("Option A", true);
+addMcqOption("Option B", false);
+addMcqOption("Option C", false);
+addMcqOption("Option D", false);
+
+function collectMcqOptions() {
+  const rows = document.querySelectorAll("#mcq-options-list .test-case-row");
+  const options = [];
+  let correctIndex = 0;
+  rows.forEach((row, i) => {
+    const text = row.querySelector("[data-role='option-text']")?.value?.trim() ?? "";
+    const isChecked = row.querySelector("input[type='radio']")?.checked ?? false;
+    if (text) {
+      options.push(text);
+      if (isChecked) correctIndex = options.length - 1;
+    }
+  });
+  return { options, correctIndex };
+}
+
 // ── Create Question ────────────────────────────────────────
 document.getElementById("btn-create-question").addEventListener("click", async () => {
   const feedback = document.getElementById("form-feedback");
   feedback.classList.add("hidden");
 
+  const type        = document.getElementById("q-type").value;
   const title       = document.getElementById("q-title").value.trim();
   const description = document.getElementById("q-description").value.trim();
   const difficulty  = document.getElementById("q-difficulty").value;
   const timeLimit   = parseInt(document.getElementById("q-time-limit").value, 10) || 1800;
-  const inputFmt    = document.getElementById("q-input-format").value.trim();
-  const outputFmt   = document.getElementById("q-output-format").value.trim();
-  const testCases   = collectTestCases();
-  const examples    = collectExamples();
 
   // Validation
   if (!title) {
@@ -194,15 +241,37 @@ document.getElementById("btn-create-question").addEventListener("click", async (
     document.getElementById("q-description").focus();
     return;
   }
-  if (testCases.length === 0) {
-    showFeedback("error", "At least one test case is required.");
-    return;
-  }
-  for (let i = 0; i < testCases.length; i++) {
-    if (!testCases[i].expected) {
-      showFeedback("error", `Test case ${i + 1} is missing expected output.`);
+
+  let payload = { title, description, difficulty, time_limit: timeLimit, type };
+
+  if (type === "mcq") {
+    const { options, correctIndex } = collectMcqOptions();
+    if (options.length < 2) {
+      showFeedback("error", "At least two options are required for an MCQ.");
       return;
     }
+    payload.options = options;
+    payload.correct_option = correctIndex;
+  } else {
+    const inputFmt  = document.getElementById("q-input-format").value.trim();
+    const outputFmt = document.getElementById("q-output-format").value.trim();
+    const testCases = collectTestCases();
+    const examples  = collectExamples();
+
+    if (testCases.length === 0) {
+      showFeedback("error", "At least one test case is required.");
+      return;
+    }
+    for (let i = 0; i < testCases.length; i++) {
+      if (!testCases[i].expected) {
+        showFeedback("error", `Test case ${i + 1} is missing expected output.`);
+        return;
+      }
+    }
+    payload.input_format  = inputFmt;
+    payload.output_format = outputFmt;
+    payload.test_cases    = testCases;
+    payload.examples     = examples;
   }
 
   const btn = document.getElementById("btn-create-question");
@@ -213,21 +282,14 @@ document.getElementById("btn-create-question").addEventListener("click", async (
     const res = await fetch(`${API_BASE}/questions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Admin-Password": adminPassword },
-      body: JSON.stringify({
-        title, description, difficulty,
-        time_limit: timeLimit,
-        input_format: inputFmt,
-        output_format: outputFmt,
-        test_cases: testCases,
-        examples,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
     if (!res.ok) {
       showFeedback("error", data.error || "Failed to create question.");
     } else {
-      showFeedback("success", `Question "${data.title}" created! (ID: ${data.id})`);
+      showFeedback("success", `${type === "mcq" ? "MCQ" : "Coding"} Question "${data.title}" created! (ID: ${data.id})`);
       showToast("success", "Question Created 🎉", data.title);
       resetForm();
       loadQuestions();

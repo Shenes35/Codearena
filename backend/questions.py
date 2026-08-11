@@ -126,11 +126,11 @@ def _strip(doc: dict) -> dict:
 
 
 def get_all() -> list[dict]:
-    """Return all questions (without test case expected outputs for security)."""
+    """Return all questions (without test case expected outputs or MCQ correct options for security)."""
     col = _get_col()
     result = []
     for q in col.find({}, {"_id": 0}):
-        safe = {k: v for k, v in q.items() if k != "test_cases"}
+        safe = {k: v for k, v in q.items() if k not in ("test_cases", "correct_option")}
         safe["test_case_count"] = len(q.get("test_cases", []))
         result.append(safe)
     return result
@@ -144,20 +144,29 @@ def get_by_id(qid: str) -> dict | None:
 
 
 def add(data: dict) -> dict:
-    """Add a new question and persist to MongoDB."""
+    """Add a new question (Coding or MCQ) and persist to MongoDB."""
     col = _get_col()
+    q_type = data.get("type", "coding")
+
     question = {
         "id":            str(uuid.uuid4())[:8],
+        "type":          q_type,
         "title":         data["title"],
         "description":   data["description"],
-        "input_format":  data.get("input_format", ""),
-        "output_format": data.get("output_format", ""),
-        "examples":      data.get("examples", []),
-        "test_cases":    data.get("test_cases", []),
         "difficulty":    data.get("difficulty", "Medium"),
         "time_limit":    int(data.get("time_limit", 1800)),
         "created_at":    datetime.now(timezone.utc).isoformat(),
     }
+
+    if q_type == "mcq":
+        question["options"] = data.get("options", [])
+        question["correct_option"] = int(data.get("correct_option", 0))
+    else:
+        question["input_format"]  = data.get("input_format", "")
+        question["output_format"] = data.get("output_format", "")
+        question["examples"]      = data.get("examples", [])
+        question["test_cases"]    = data.get("test_cases", [])
+
     col.insert_one(question)
     question.pop("_id", None)
     return question

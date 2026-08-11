@@ -67,25 +67,53 @@ def get_question(qid):
 
 @app.post("/questions")
 def add_question():
-    """Admin: add a new question."""
+    """Admin: add a new question (Coding or MCQ)."""
     if not _check_admin(request):
         return jsonify({"error": "Unauthorized"}), 401
 
     data = request.get_json(silent=True) or {}
-    required = ["title", "description", "test_cases"]
+    q_type = data.get("type", "coding")
+
+    required = ["title", "description"]
     missing = [f for f in required if not data.get(f)]
     if missing:
         return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
 
-    if not isinstance(data["test_cases"], list) or len(data["test_cases"]) == 0:
-        return jsonify({"error": "At least one test case required"}), 400
-
-    for i, tc in enumerate(data["test_cases"]):
-        if "input" not in tc or "expected" not in tc:
-            return jsonify({"error": f"Test case {i+1} missing 'input' or 'expected'"}), 400
+    if q_type == "mcq":
+        options = data.get("options", [])
+        if not isinstance(options, list) or len(options) < 2:
+            return jsonify({"error": "At least two options are required for an MCQ question"}), 400
+        correct = data.get("correct_option")
+        if correct is None or not (0 <= int(correct) < len(options)):
+            return jsonify({"error": "Valid correct option index required"}), 400
+    else:
+        if not isinstance(data.get("test_cases"), list) or len(data.get("test_cases", [])) == 0:
+            return jsonify({"error": "At least one test case required for coding questions"}), 400
+        for i, tc in enumerate(data["test_cases"]):
+            if "input" not in tc or "expected" not in tc:
+                return jsonify({"error": f"Test case {i+1} missing 'input' or 'expected'"}), 400
 
     q = qs.add(data)
     return jsonify(q), 201
+
+
+@app.post("/questions/<qid>/verify-mcq")
+def verify_mcq(qid):
+    """Verify an MCQ answer."""
+    q = qs.get_by_id(qid)
+    if not q or q.get("type") != "mcq":
+        return jsonify({"error": "MCQ question not found"}), 404
+    data = request.get_json(silent=True) or {}
+    selected = data.get("selected_option")
+    if selected is None:
+        return jsonify({"error": "No option selected"}), 400
+    
+    correct = q.get("correct_option", 0)
+    is_correct = int(selected) == int(correct)
+    return jsonify({
+        "correct": is_correct,
+        "correct_option": correct
+    })
 
 
 @app.delete("/questions/<qid>")
