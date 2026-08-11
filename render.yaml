@@ -14,3 +14,7 @@ services:
         value: production
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: MONGODB_URI
+        value: mongodb+srv://shenesz13_db_user:4mpJ0eNgzhxubfcF@cluster0.aykblpn.mongodb.net/codearena?appName=Cluster0
+      - key: JUDGE0_API_URL
+        value: https://judge0-ce.p.rapidapi.com
