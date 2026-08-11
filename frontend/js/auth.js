@@ -210,6 +210,12 @@ function initGoogleAuth() {
   }
 }
 
+// Auto-run UI sync on DOM load in case Google SDK loaded before or cached user exists
+document.addEventListener("DOMContentLoaded", () => {
+  const user = getUser();
+  _updateNavbar(user);
+});
+
 /* ── Helpers ─────────────────────────────────────────────── */
 function _escHtml(str) {
   return String(str || "")
