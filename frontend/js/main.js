@@ -36,7 +36,9 @@ async function loadQuestions() {
   try {
     const res = await fetch(`${API_BASE}/questions`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    allQuestions = await res.json();
+    const data = await res.json();
+    // Attach permanent problem number based on original list order
+    allQuestions = data.map((q, idx) => ({ ...q, _num: idx + 1 }));
     updateStats(allQuestions);
     renderGrid(allQuestions);
   } catch (err) {
@@ -79,15 +81,16 @@ function renderGrid(questions) {
     return;
   }
 
-  grid.innerHTML = questions.map((q, i) => {
+  grid.innerHTML = questions.map((q) => {
     const isMcq = q.type === "mcq";
     const typeBadge = isMcq ? `<span class="badge" style="background:rgba(197,134,192,0.15);color:var(--purple)">MCQ</span>` : `<span class="badge" style="background:rgba(86,156,214,0.15);color:var(--accent)">Coding</span>`;
     const metaInfo = isMcq ? `<span>🔘 MCQ Quiz</span>` : `<span>🧪 ${q.test_case_count ?? 0} test cases</span>`;
+    const numDisplay = q._num || 1;
 
     return `
     <a class="question-card" href="editor.html?id=${q.id}" id="qcard-${q.id}">
       <div class="question-card-header">
-        <span class="question-number">#${i + 1}</span>
+        <span class="question-number">#${numDisplay}</span>
         <div style="display:flex;gap:6px">
           ${typeBadge}
           <span class="badge ${difficultyBadgeClass(q.difficulty)}">${q.difficulty}</span>
