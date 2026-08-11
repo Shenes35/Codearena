@@ -7,10 +7,15 @@
 // Production (Render): https://codearena-r5yq.onrender.com
 const API_BASE = "https://codearena-r5yq.onrender.com";
 
-const USERNAME_KEY = "codearena_username";
-
 // ── Utils ──────────────────────────────────────────────────
-function getUsername() { return localStorage.getItem(USERNAME_KEY) || "Guest"; }
+// Get display name from Google Sign-In (auth.js) or fallback to "Guest"
+function getUsername() {
+  if (window.CA_Auth) {
+    const user = CA_Auth.getUser();
+    if (user) return user.name;
+  }
+  return "Guest";
+}
 
 function escHtml(str) {
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -145,8 +150,8 @@ function initMonaco(language = "python") {
   });
 }
 
-// ── Username in navbar ─────────────────────────────────────
-document.getElementById("username-badge").textContent = getUsername();
+// ── Auth chip updated by auth.js automatically ─────────────
+// (no manual username-badge needed — auth.js populates #auth-chip)
 
 // ── Problem Panel Tabs ─────────────────────────────────────
 document.querySelectorAll(".panel-tab").forEach(tab => {

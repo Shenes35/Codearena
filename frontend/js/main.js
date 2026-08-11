@@ -6,8 +6,6 @@
 // Production (Render): https://codearena-r5yq.onrender.com
 const API_BASE = "https://codearena-r5yq.onrender.com";
 
-
-
 // ── Toast utility ─────────────────────────────────────────
 function showToast(type, title, body = "", duration = 4000) {
   const container = document.getElementById("toast-container");
@@ -24,54 +22,11 @@ function showToast(type, title, body = "", duration = 4000) {
   setTimeout(() => { toast.style.opacity = "0"; toast.style.transition = "opacity 0.4s"; setTimeout(() => toast.remove(), 400); }, duration);
 }
 
-// ── Username logic ─────────────────────────────────────────
-const USERNAME_KEY = "codearena_username";
-
-function getUsername() {
-  return localStorage.getItem(USERNAME_KEY) || "";
-}
-
-function setUsername(name) {
-  localStorage.setItem(USERNAME_KEY, name.trim());
-}
-
-function updateUsernameDisplay() {
-  const name = getUsername();
-  const display = document.getElementById("username-display");
-  if (display) display.textContent = name || "Set Username";
-}
-
-// ── Modal ──────────────────────────────────────────────────
-const modal   = document.getElementById("username-modal");
-const btnSet  = document.getElementById("btn-set-username");
-const input   = document.getElementById("username-input");
-const btnSave = document.getElementById("btn-save-username");
-
-function openModal() {
-  modal.classList.remove("hidden");
-  input.value = getUsername();
-  setTimeout(() => input.focus(), 100);
-}
-
-function closeModal() { modal.classList.add("hidden"); }
-
-btnSet.addEventListener("click", openModal);
-
-btnSave.addEventListener("click", () => {
-  const name = input.value.trim();
-  if (!name) { input.focus(); return; }
-  setUsername(name);
-  updateUsernameDisplay();
-  closeModal();
-  showToast("success", `Hello, ${name}! 👋`);
+// ── Google Sign-In event listener ─────────────────────────
+// Show welcome toast when user signs in
+window.addEventListener("codearena:signin", (e) => {
+  showToast("success", `Hello, ${e.detail.name}! 👋`, "You're signed in with Google.");
 });
-
-input.addEventListener("keydown", e => { if (e.key === "Enter") btnSave.click(); });
-modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
-
-// Show modal if no username set
-if (!getUsername()) setTimeout(openModal, 600);
-updateUsernameDisplay();
 
 // ── Questions ──────────────────────────────────────────────
 let allQuestions = [];

@@ -6,6 +6,10 @@
   <title>CodeArena — Admin Panel</title>
   <meta name="description" content="Admin panel to create and manage coding problems on CodeArena." />
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async
+          onload="if(typeof initGoogleAuth==='function') initGoogleAuth()"></script>
 </head>
 <body>
 
@@ -18,11 +22,13 @@
     <div class="navbar-links">
       <a class="nav-link" href="index.html">Problems</a>
       <a class="nav-link active" href="admin.html">Admin</a>
+      <!-- Auth chip — populated by auth.js -->
+      <div class="auth-chip" id="auth-chip"></div>
     </div>
   </nav>
 
   <!-- ── Admin Auth Gate ─────────────────────────────────── -->
-  <div class="modal-overlay" id="auth-modal">
+  <div class="modal-overlay" id="auth-modal" style="display:flex">
     <div class="modal-box">
       <div class="modal-title">🔐 Admin Login</div>
       <div class="modal-subtitle">Enter your admin password to access the panel.</div>
@@ -160,6 +166,7 @@
   <!-- ── Toast container ──────────────────────────────────── -->
   <div class="toast-container" id="toast-container"></div>
 
+  <script src="js/auth.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

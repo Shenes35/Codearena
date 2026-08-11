@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CodeArena — Practice & Master Coding</title>
+  <title>CodeArena — Practice &amp; Master Coding</title>
   <meta name="description" content="An interactive coding platform to practice problems, run code, and track your submissions." />
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async
+          onload="if(typeof initGoogleAuth==='function') initGoogleAuth()"></script>
 </head>
 <body>
 
@@ -18,24 +22,10 @@
     <div class="navbar-links">
       <a class="nav-link active" href="index.html">Problems</a>
       <a class="nav-link" href="admin.html">Admin</a>
-      <button class="btn btn-primary btn-sm" id="btn-set-username">
-        👤 <span id="username-display">Set Username</span>
-      </button>
+      <!-- Auth chip — populated by auth.js -->
+      <div class="auth-chip" id="auth-chip"></div>
     </div>
   </nav>
-
-  <!-- ── Username Modal ──────────────────────────────────── -->
-  <div class="modal-overlay hidden" id="username-modal">
-    <div class="modal-box">
-      <div class="modal-title">👋 Welcome to CodeArena</div>
-      <div class="modal-subtitle">Enter your name to track your submissions.</div>
-      <div class="form-group" style="margin-bottom:20px">
-        <label class="form-label" for="username-input">Your Name</label>
-        <input type="text" id="username-input" class="form-control" placeholder="e.g. Alice" maxlength="40" autocomplete="off" />
-      </div>
-      <button class="btn btn-primary" id="btn-save-username" style="width:100%">Let's Go →</button>
-    </div>
-  </div>
 
   <!-- ── Main ────────────────────────────────────────────── -->
   <main class="container">
@@ -88,6 +78,7 @@
   <!-- ── Toast container ──────────────────────────────────── -->
   <div class="toast-container" id="toast-container"></div>
 
+  <script src="js/auth.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
