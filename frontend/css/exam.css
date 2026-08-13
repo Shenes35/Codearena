@@ -23,7 +23,10 @@ body.exam-body {
   color: var(--exam-text);
   font-family: var(--exam-font);
   overflow-x: hidden;
-  user-select: none;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* Exam Navbar / Header */
@@ -137,6 +140,8 @@ body.exam-body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .question-title-bar {
@@ -158,6 +163,13 @@ body.exam-body {
   font-size: 15px;
   line-height: 1.6;
   margin-bottom: 24px;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.question-body pre, .question-body code {
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 .question-body pre {
