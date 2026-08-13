@@ -41,13 +41,20 @@ SEED_QUESTIONS = [
         "id": "q1",
         "title": "Two Sum",
         "description": (
-            "Given an array of integers `nums` and an integer `target`, "
-            "return the indices of the two numbers such that they add up to `target`.\n\n"
-            "You may assume that each input would have exactly one solution, "
-            "and you may not use the same element twice.\n\n"
-            "Return the answer in ascending order."
+            "### Problem Statement\n"
+            "Given an array of integers `nums` and an integer `target`, return the 0-based indices of the two numbers such that they add up to `target`.\n\n"
+            "You may assume that each input would have **exactly one solution**, and you may not use the same element twice.\n\n"
+            "### Input Format\n"
+            "- **Line 1:** Space-separated integers representing array `nums`.\n"
+            "- **Line 2:** Target integer `target`.\n\n"
+            "### Output Format\n"
+            "Print two space-separated indices in ascending order.\n\n"
+            "### Example 1\n"
+            "**Input:**\n```\n2 7 11 15\n9\n```\n"
+            "**Output:**\n```\n0 1\n```\n"
+            "**Explanation:** Because nums[0] + nums[1] == 2 + 7 == 9, we return `0 1`."
         ),
-        "input_format": "Line 1: Space-separated integers (the array)\nLine 2: The target integer",
+        "input_format": "Line 1: Space-separated integers (nums)\nLine 2: Target integer",
         "output_format": "Two space-separated indices (ascending order)",
         "examples": [
             {"input": "2 7 11 15\n9", "output": "0 1"},
@@ -66,8 +73,15 @@ SEED_QUESTIONS = [
         "id": "q2",
         "title": "Reverse String",
         "description": (
-            "Write a program that reads a string and prints it reversed.\n\n"
-            "Do not use any built-in reverse functions."
+            "### Problem Statement\n"
+            "Write a program that reads a string `s` and prints the string reversed.\n\n"
+            "### Input Format\n"
+            "A single string `s` without spaces.\n\n"
+            "### Output Format\n"
+            "The reversed string on a single line.\n\n"
+            "### Example 1\n"
+            "**Input:** `hello`  \n"
+            "**Output:** `olleh`"
         ),
         "input_format": "A single line containing a string (no spaces)",
         "output_format": "The reversed string on a single line",
@@ -88,10 +102,16 @@ SEED_QUESTIONS = [
         "id": "q3",
         "title": "Fibonacci Sequence",
         "description": (
-            "Given a number N, print the first N terms of the Fibonacci sequence.\n\n"
-            "The sequence starts with 0 and 1. Each subsequent term is the sum "
-            "of the two preceding ones.\n\n"
-            "Print all terms space-separated on a single line."
+            "### Problem Statement\n"
+            "Given an integer `N`, print the first `N` terms of the Fibonacci sequence.\n\n"
+            "The sequence starts with `0` and `1`. Each subsequent term is the sum of the two preceding ones.\n\n"
+            "### Input Format\n"
+            "A single integer `N` (1 ≤ N ≤ 20).\n\n"
+            "### Output Format\n"
+            "Print `N` space-separated integers on a single line.\n\n"
+            "### Example 1\n"
+            "**Input:** `5`  \n"
+            "**Output:** `0 1 1 2 3`"
         ),
         "input_format": "A single integer N (1 ≤ N ≤ 20)",
         "output_format": "N space-separated Fibonacci numbers",
@@ -883,142 +903,142 @@ def _seed_placement_mcqs(count: int):
         # 2024 Technical Assessment Questions
         {
             "title": "C Programming Output - Increment Sequence (2024)",
-            "desc": "What is the output?\n\nint main() {\n    int x = 5;\n    printf(\"%d\", x++ + ++x);\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output of the following C code?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int x = 5;\n    printf(\"%d\", x++ + ++x);\n    return 0;\n}\n```",
             "opts": ["10", "11", "12", "13"],
             "correct": 2,
-            "explanation": "Note: Undefined behavior. Many compilers compute: x++ uses 5 (x=6), then ++x makes x=7, yielding 5 + 7 = 12."
+            "explanation": "Note: Undefined behavior due to sequence point violations. In many standard C compilers, `x++` evaluates to 5 (x becomes 6), then `++x` increments x to 7 and evaluates to 7. Result: 5 + 7 = 12."
         },
         {
             "title": "Loop Output - Continue Statement (2024)",
-            "desc": "What is the output?\n\nint main() {\n    int i;\n    for(i=0; i<5; i++) {\n        if(i == 3) continue;\n        printf(\"%d \", i);\n    }\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output of the following C loop?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int i;\n    for(i=0; i<5; i++) {\n        if(i == 3) continue;\n        printf(\"%d \", i);\n    }\n    return 0;\n}\n```",
             "opts": ["0 1 2 3 4", "0 1 2 4", "0 1 2", "1 2 4"],
             "correct": 1,
-            "explanation": "Loop prints 0 1 2, skips i=3 due to continue, then prints 4."
+            "explanation": "The loop prints 0, 1, and 2. When i == 3, the `continue` statement skips printing and jumps to increment. Then i = 4 is printed."
         },
         {
             "title": "Array Pointer Manipulation (2024)",
-            "desc": "What is the output?\n\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = arr;\n    printf(\"%d %d\", *(p+2), arr[3]);\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output of the following C program?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = arr;\n    printf(\"%d %d\", *(p+2), arr[3]);\n    return 0;\n}\n```",
             "opts": ["2 3", "3 4", "3 5", "2 4"],
             "correct": 1,
-            "explanation": "*(p+2) is arr[2] = 3. arr[3] = 4. Output: 3 4."
+            "explanation": "`p` points to arr[0]. `*(p+2)` evaluates to arr[2] = 3. `arr[3]` is 4. Output: `3 4`."
         },
         {
             "title": "Recursion Output - Factorial (2024)",
-            "desc": "What is the output?\n\nint func(int n) {\n    if(n <= 1) return 1;\n    return n * func(n-1);\n}\nprintf(\"%d\", func(5));",
+            "desc": "### Question\nWhat is the output of the recursive function call `func(5)`?\n\n```c\nint func(int n) {\n    if(n <= 1) return 1;\n    return n * func(n-1);\n}\n```",
             "opts": ["24", "120", "720", "60"],
             "correct": 1,
-            "explanation": "Calculates 5! = 5 × 4 × 3 × 2 × 1 = 120."
+            "explanation": "Calculates factorial: 5 × 4 × 3 × 2 × 1 = 120."
         },
         {
             "title": "Java Output - Pre & Post Increment (2024)",
-            "desc": "What is the output?\n\npublic class Test {\n    public static void main(String[] args) {\n        int x = 10;\n        System.out.println(x++ + ++x);\n    }\n}",
+            "desc": "### Question\nWhat is the output of the following Java program?\n\n```java\npublic class Test {\n    public static void main(String[] args) {\n        int x = 10;\n        System.out.println(x++ + ++x);\n    }\n}\n```",
             "opts": ["20", "21", "22", "24"],
             "correct": 2,
-            "explanation": "x++ uses 10 (x becomes 11), ++x evaluates to 12. Total = 10 + 12 = 22."
+            "explanation": "In Java, evaluation is strictly left-to-right. `x++` evaluates to 10 (x becomes 11), then `++x` increments x to 12 and evaluates to 12. Output: 10 + 12 = 22."
         },
         {
             "title": "Python Output - Step Recursion (2024)",
-            "desc": "What is the output?\n\ndef func(n):\n    if n <= 1:\n        return 1\n    return n * func(n-2)\n\nprint(func(6))",
+            "desc": "### Question\nWhat is the output of the following Python program?\n\n```python\ndef func(n):\n    if n <= 1:\n        return 1\n    return n * func(n-2)\n\nprint(func(6))\n```",
             "opts": ["24", "48", "96", "120"],
             "correct": 1,
-            "explanation": "func(6) = 6 × func(4) = 6 × (4 × func(2)) = 6 × 4 × (2 × func(0)) = 6 × 4 × 2 × 1 = 48."
+            "explanation": "`func(6)` = 6 × `func(4)` = 6 × (4 × `func(2)`) = 6 × 4 × (2 × `func(0)`) = 6 × 4 × 2 × 1 = 48."
         },
         {
             "title": "Pointer Arithmetic Output (2024)",
-            "desc": "What is the output?\n\nint main() {\n    int arr[] = {10, 20, 30, 40, 50};\n    int *ptr = arr + 2;\n    printf(\"%d\", *(ptr+1));\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output of the following code snippet?\n\n```c\nint main() {\n    int arr[] = {10, 20, 30, 40, 50};\n    int *ptr = arr + 2;\n    printf(\"%d\", *(ptr+1));\n    return 0;\n}\n```",
             "opts": ["20", "30", "40", "50"],
             "correct": 2,
-            "explanation": "ptr points to arr[2] (30). ptr+1 points to arr[3] (40)."
+            "explanation": "`arr + 2` points to arr[2] (30). `ptr + 1` moves pointer to arr[3] (40). De-referencing `*(ptr+1)` yields 40."
         },
         {
             "title": "String Operations - strlen (2024)",
-            "desc": "What is the output?\n\nint main() {\n    char str[] = \"HELLO\";\n    printf(\"%d\", strlen(str));\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output of the following program?\n\n```c\nint main() {\n    char str[] = \"HELLO\";\n    printf(\"%d\", strlen(str));\n    return 0;\n}\n```",
             "opts": ["4", "5", "6", "0"],
             "correct": 1,
-            "explanation": "'HELLO' contains 5 characters (excluding null terminator)."
+            "explanation": "`strlen(\"HELLO\")` counts character length excluding null terminator, returning 5."
         },
         {
             "title": "Pseudo Code - Value Swap (2024)",
-            "desc": "What will be the output?\n\nBegin\n  Integer x = 10\n  Integer y = 5\n  x = x + y\n  y = x - y\n  x = x - y\n  Print x, y\nEnd",
+            "desc": "### Question\nWhat will be the output of the following pseudocode?\n\n```text\nBegin\n  Integer x = 10\n  Integer y = 5\n  x = x + y\n  y = x - y\n  x = x - y\n  Print x, y\nEnd\n```",
             "opts": ["x = 10, y = 5", "x = 5, y = 10", "x = 15, y = 5", "x = 5, y = 5"],
             "correct": 1,
-            "explanation": "Swaps x and y without temp variable. Final values: x = 5, y = 10."
+            "explanation": "Swaps values without temporary variable: x becomes 15, y becomes 10, x becomes 5. Final output: `x = 5, y = 10`."
         },
         {
             "title": "Networking - OSI Model Layer (2024)",
             "desc": "Which layer of the OSI model is responsible for end-to-end communication and error-free delivery of data?",
             "opts": ["a) Network Layer", "b) Transport Layer", "c) Session Layer", "d) Data Link Layer"],
             "correct": 1,
-            "explanation": "Transport Layer (Layer 4) provides end-to-end communication and reliability."
+            "explanation": "The Transport layer (Layer 4) manages end-to-end flow control, error checking, and data delivery."
         },
 
         # 2025 Technical Assessment Questions
         {
             "title": "C Output - Post and Pre Increment Dual Printf (2025)",
-            "desc": "What is the output?\n\nint main() {\n    int a = 5, b = 10;\n    printf(\"%d %d\", a++, ++b);\n    printf(\" %d %d\", a, b);\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output of the following C program?\n\n```c\n#include <stdio>\n\nint main() {\n    int a = 5, b = 10;\n    printf(\"%d %d\", a++, ++b);\n    printf(\" %d %d\", a, b);\n    return 0;\n}\n```",
             "opts": ["5 10 6 11", "5 11 6 11", "6 11 6 11", "5 11 5 11"],
             "correct": 1,
-            "explanation": "a++ uses 5 (a becomes 6), ++b makes b=11. First printf: 5 11. Second printf: 6 11."
+            "explanation": "`a++` uses 5 (then a=6), `++b` increments b to 11. First printf prints `5 11`. Second printf prints `6 11`."
         },
         {
             "title": "Loop with Break Output (2025)",
-            "desc": "What is the output?\n\nint main() {\n    int i;\n    for(i=1; i<=10; i++) {\n        if(i == 5) break;\n        printf(\"%d \", i);\n    }\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output of the following C program?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int i;\n    for(i=1; i<=10; i++) {\n        if(i == 5) break;\n        printf(\"%d \", i);\n    }\n    return 0;\n}\n```",
             "opts": ["1 2 3 4 5", "1 2 3 4", "1 2 3 4 5 6 7 8 9 10", "5"],
             "correct": 1,
-            "explanation": "Loop prints 1 2 3 4 and breaks when i == 5."
+            "explanation": "Prints 1 2 3 4. When i == 5, break terminates the loop."
         },
         {
             "title": "Array and Pointer Indexing (2025)",
-            "desc": "What is the output?\n\nint main() {\n    int arr[] = {10, 20, 30, 40};\n    int *p = arr;\n    printf(\"%d %d\", *p, *(p+3));\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output?\n\n```c\nint main() {\n    int arr[] = {10, 20, 30, 40};\n    int *p = arr;\n    printf(\"%d %d\", *p, *(p+3));\n    return 0;\n}\n```",
             "opts": ["10 30", "10 40", "20 40", "10 20"],
             "correct": 1,
-            "explanation": "*p is arr[0] = 10. *(p+3) is arr[3] = 40."
+            "explanation": "`*p` is arr[0] = 10. `*(p+3)` is arr[3] = 40. Output: `10 40`."
         },
         {
             "title": "Recursion - Natural Sum (2025)",
-            "desc": "What is the output?\n\nint sum(int n) {\n    if(n == 0) return 0;\n    return n + sum(n-1);\n}\nprintf(\"%d\", sum(5));",
+            "desc": "### Question\nWhat is the output of `sum(5)`?\n\n```c\nint sum(int n) {\n    if(n == 0) return 0;\n    return n + sum(n-1);\n}\n```",
             "opts": ["10", "15", "20", "25"],
             "correct": 1,
             "explanation": "Calculates 5 + 4 + 3 + 2 + 1 + 0 = 15."
         },
         {
             "title": "Java Output - String Comparison (2025)",
-            "desc": "What is the output?\n\npublic class Test {\n    public static void main(String[] args) {\n        String s1 = \"Hello\";\n        String s2 = new String(\"Hello\");\n        System.out.println(s1 == s2);\n        System.out.println(s1.equals(s2));\n    }\n}",
+            "desc": "### Question\nWhat is the output of the following Java snippet?\n\n```java\npublic class Test {\n    public static void main(String[] args) {\n        String s1 = \"Hello\";\n        String s2 = new String(\"Hello\");\n        System.out.println(s1 == s2);\n        System.out.println(s1.equals(s2));\n    }\n}\n```",
             "opts": ["true true", "false true", "true false", "false false"],
             "correct": 1,
-            "explanation": "== checks reference identity (false), .equals() checks text content (true)."
+            "explanation": "`==` checks reference equality (false because s2 is new object), `.equals()` checks string value equality (true)."
         },
         {
             "title": "Python Output - Recursive List Sum (2025)",
-            "desc": "What is the output?\n\ndef func(lst):\n    if len(lst) == 0:\n        return 0\n    return lst[0] + func(lst[1:])\n\nprint(func([1, 2, 3, 4]))",
+            "desc": "### Question\nWhat is the output of the following Python program?\n\n```python\ndef func(lst):\n    if len(lst) == 0:\n        return 0\n    return lst[0] + func(lst[1:])\n\nprint(func([1, 2, 3, 4]))\n```",
             "opts": ["6", "10", "24", "0"],
             "correct": 1,
-            "explanation": "Recursively sums elements: 1 + 2 + 3 + 4 + 0 = 10."
+            "explanation": "Recursively sums list elements: 1 + 2 + 3 + 4 = 10."
         },
         {
             "title": "Pointer Arithmetic - Negative Index (2025)",
-            "desc": "What is the output?\n\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = &arr[2];\n    printf(\"%d %d\", p[-1], p[1]);\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output?\n\n```c\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = &arr[2];\n    printf(\"%d %d\", p[-1], p[1]);\n    return 0;\n}\n```",
             "opts": ["1 3", "2 4", "3 5", "2 3"],
             "correct": 1,
-            "explanation": "p points to arr[2] (3). p[-1] is arr[1] = 2. p[1] is arr[3] = 4."
+            "explanation": "`p` points to arr[2] (3). `p[-1]` accesses arr[1] = 2. `p[1]` accesses arr[3] = 4. Output: `2 4`."
         },
         {
             "title": "Nested Loops - Right Triangle Pattern (2025)",
-            "desc": "What is the output?\n\nint main() {\n    int i, j;\n    for(i=1; i<=3; i++) {\n        for(j=1; j<=i; j++) {\n            printf(\"%d\", j);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+            "desc": "### Question\nWhat is the output?\n\n```c\nint main() {\n    int i, j;\n    for(i=1; i<=3; i++) {\n        for(j=1; j<=i; j++) {\n            printf(\"%d\", j);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}\n```",
             "opts": ["1\\n12\\n123", "123\\n123\\n123", "1\\n22\\n333", "321"],
             "correct": 0,
-            "explanation": "Prints 1 on line 1, 12 on line 2, 123 on line 3."
+            "explanation": "Prints 1 on line 1, 12 on line 2, and 123 on line 3."
         },
         {
             "title": "Abstract Reasoning - Shape Sequence (2025)",
-            "desc": "Identify the next shape in the sequence: Circle, Square, Triangle, Circle, Square, ?",
+            "desc": "Identify the next shape in the sequence:\n**Circle, Square, Triangle, Circle, Square, ?**",
             "opts": ["Circle", "Square", "Triangle", "Hexagon"],
             "correct": 2,
-            "explanation": "Sequence repeats every 3 shapes (Circle, Square, Triangle)."
+            "explanation": "Sequence repeats every 3 shapes (Circle, Square, Triangle). Next shape is Triangle."
         },
         {
             "title": "Pseudo Code - Simple Addition (2025)",
-            "desc": "What will be the output?\n\nBegin\n    Set A = 10\n    Set B = 20\n    Set C = A + B\n    Print C\nEnd",
+            "desc": "### Question\nWhat will be the output?\n\n```text\nBegin\n    Set A = 10\n    Set B = 20\n    Set C = A + B\n    Print C\nEnd\n```",
             "opts": ["10", "20", "30", "1020"],
             "correct": 2,
             "explanation": "Prints C = 10 + 20 = 30."
@@ -1071,7 +1091,17 @@ def _seed_placement_coding(count: int):
     problems = [
         {
             "title": "Palindrome Check",
-            "description": "Given a string `s`, determine if it is a palindrome considering only alphanumeric characters and ignoring cases.",
+            "description": (
+                "### Problem Statement\n"
+                "Given a string `s`, determine if it is a palindrome considering only alphanumeric characters and ignoring cases.\n\n"
+                "### Input Format\n"
+                "A single string `s`.\n\n"
+                "### Output Format\n"
+                "Print `true` if it is a palindrome, otherwise print `false`.\n\n"
+                "### Example 1\n"
+                "**Input:** `racecar`  \n"
+                "**Output:** `true`"
+            ),
             "input_format": "A single string s",
             "output_format": "Print 'true' if palindrome, else 'false'",
             "examples": [{"input": "racecar", "output": "true"}, {"input": "hello", "output": "false"}],
@@ -1080,7 +1110,18 @@ def _seed_placement_coding(count: int):
         },
         {
             "title": "Find Missing Number",
-            "description": "Given an array containing n distinct numbers taken from 0, 1, 2, ..., n, find the single missing number in the sequence.",
+            "description": (
+                "### Problem Statement\n"
+                "Given an array containing `n` distinct numbers taken from `0, 1, 2, ..., n`, find the single missing number in the sequence.\n\n"
+                "### Input Format\n"
+                "Space-separated integers representing the array.\n\n"
+                "### Output Format\n"
+                "Print the single missing integer.\n\n"
+                "### Example 1\n"
+                "**Input:** `3 0 1`  \n"
+                "**Output:** `2`  \n"
+                "**Explanation:** n = 3 since there are 3 numbers. The range is [0, 3]. 2 is the missing number."
+            ),
             "input_format": "Space-separated integers",
             "output_format": "The missing integer",
             "examples": [{"input": "3 0 1", "output": "2"}],
@@ -1089,7 +1130,18 @@ def _seed_placement_coding(count: int):
         },
         {
             "title": "Maximum Subarray Sum",
-            "description": "Given an integer array `nums`, find the contiguous subarray (containing at least one number) which has the largest sum and print its sum.",
+            "description": (
+                "### Problem Statement\n"
+                "Given an integer array `nums`, find the contiguous subarray (containing at least one number) which has the largest sum and print its sum.\n\n"
+                "### Input Format\n"
+                "Space-separated integers representing array `nums`.\n\n"
+                "### Output Format\n"
+                "Print the maximum subarray sum integer.\n\n"
+                "### Example 1\n"
+                "**Input:** `-2 1 -3 4 -1 2 1 -5 4`  \n"
+                "**Output:** `6`  \n"
+                "**Explanation:** Subarray `[4, -1, 2, 1]` has the largest sum = `6`."
+            ),
             "input_format": "Space-separated integers",
             "output_format": "The maximum subarray sum integer",
             "examples": [{"input": "-2 1 -3 4 -1 2 1 -5 4", "output": "6"}],
