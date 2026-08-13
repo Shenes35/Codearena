@@ -198,28 +198,25 @@ function parseMarkdownToHtml(markdownText) {
   
   let html = markdownText;
 
-  // 1. If string contains raw backticks (like ```python or ````text or ````), clean them
-  // e.g. ````python def func(lst)... ```` -> extract code
-  const backtickBlockRegex = /[`\u2018\u2019\u201C\u201D]{2,}\s*([a-zA-Z]*)([\s\S]*?)[`\u2018\u2019\u201C\u201D]{2,}/gi;
+  // 1. Detect if the text contains code (either with backticks or raw single-line statements)
+  // Match backtick blocks: e.g. ```text ... ``` or ```python ... ``` or raw statements
+  const hasBackticks = /[`\u2018\u2019\u201C\u201D]{2,}/.test(html);
+  
+  if (hasBackticks) {
+    // Extract everything between the backtick markers:
+    html = html.replace(/[`\u2018\u2019\u201C\u201D]{2,}\s*([a-zA-Z]*)([\s\S]*?)[`\u2018\u2019\u201C\u201D]{2,}/gi, (match, lang, code) => {
+      let codeText = code.trim();
 
-  if (backtickBlockRegex.test(html)) {
-    html = html.replace(backtickBlockRegex, (match, lang, code) => {
-      let cleanCode = code
-        .replace(/### Question/g, "")
-        .replace(/What is the output\?/gi, "")
-        .trim();
-
-      // Format code lines
-      cleanCode = cleanCode
-        .replace(/\s*def\s+/g, '\ndef ')
-        .replace(/\s*return\s+/g, '\n  return ')
-        .replace(/\s*print\s*\(/g, '\nprint(')
-        .replace(/\s*if\s+/g, '\n  if ')
+      // Format code into multiline statements
+      let formattedCode = codeText
         .replace(/\s*Integer\s+/gi, '\nInteger ')
         .replace(/\s*Set\s+/gi, '\nSet ')
         .replace(/\s*Print\s+/gi, '\nPrint ')
         .replace(/\s*Begin\b/gi, 'Begin\n')
         .replace(/\s*End\b/gi, '\nEnd')
+        .replace(/\s*def\s+/gi, '\ndef ')
+        .replace(/\s*return\s+/gi, '\n  return ')
+        .replace(/\s*print\s*\(/gi, '\nprint(')
         .replace(/;\s*/g, ';\n')
         .replace(/\{\s*/g, '{\n')
         .replace(/\}\s*/g, '\n}\n')
@@ -228,22 +225,27 @@ function parseMarkdownToHtml(markdownText) {
         .filter(l => l.length > 0)
         .join('\n  ');
 
-      const escCode = cleanCode
+      const escCode = formattedCode
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
 
-      return `<div style="margin:16px 0"><div style="background:#1e293b;padding:4px 12px;border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border:1px solid rgba(99,102,241,0.3);border-bottom:none">💻 Code Snippet</div><pre style="background:#0f172a;border:1px solid rgba(99,102,241,0.3);border-radius:0 0 8px 8px;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:14px;color:#e2e8f0;line-height:1.6;overflow-x:auto"><code>${escCode}</code></pre></div>`;
+      return `<div style="margin:16px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:14px;color:#e2e8f0;line-height:1.6;overflow-x:auto"><code>${escCode}</code></pre></div>`;
     });
   }
 
-  // 2. Fallback: Check for unformatted code keywords
-  if (!html.includes('Code Snippet') && /(def func|int main|public class|Begin Integer|Set A =)/i.test(html)) {
-    html = html.replace(/(def func[\s\S]*|int main\s*\([^)]*\)[\s\S]*\}|public class[\s\S]*\}|Begin Integer[\s\S]*End)/i, (codeMatch) => {
-      let cleanCode = codeMatch
-        .replace(/\s*def\s+/g, '\ndef ')
-        .replace(/\s*return\s+/g, '\n  return ')
-        .replace(/\s*print\s*\(/g, '\nprint(')
+  // Fallback for code without backticks
+  if (!html.includes('CODE SNIPPET') && /(def func|int main|public class|Begin|Set A =)/i.test(html)) {
+    html = html.replace(/(def func[\s\S]*|int main\s*\([^)]*\)[\s\S]*\}|public class[\s\S]*\}|Begin[\s\S]*End)/i, (codeMatch) => {
+      let formattedCode = codeMatch
+        .replace(/\s*Integer\s+/gi, '\nInteger ')
+        .replace(/\s*Set\s+/gi, '\nSet ')
+        .replace(/\s*Print\s+/gi, '\nPrint ')
+        .replace(/\s*Begin\b/gi, 'Begin\n')
+        .replace(/\s*End\b/gi, '\nEnd')
+        .replace(/\s*def\s+/gi, '\ndef ')
+        .replace(/\s*return\s+/gi, '\n  return ')
+        .replace(/\s*print\s*\(/gi, '\nprint(')
         .replace(/;\s*/g, ';\n')
         .replace(/\{\s*/g, '{\n')
         .replace(/\}\s*/g, '\n}\n')
@@ -252,19 +254,18 @@ function parseMarkdownToHtml(markdownText) {
         .filter(l => l.length > 0)
         .join('\n  ');
 
-      const escCode = cleanCode
+      const escCode = formattedCode
         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-      return `<div style="margin:16px 0"><div style="background:#1e293b;padding:4px 12px;border-radius:8px 8px 0 0;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border:1px solid rgba(99,102,241,0.3);border-bottom:none">💻 Code Snippet</div><pre style="background:#0f172a;border:1px solid rgba(99,102,241,0.3);border-radius:0 0 8px 8px;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:14px;color:#e2e8f0;line-height:1.6;overflow-x:auto"><code>${escCode}</code></pre></div>`;
+      return `<div style="margin:16px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:14px;color:#e2e8f0;line-height:1.6;overflow-x:auto"><code>${escCode}</code></pre></div>`;
     });
   }
 
-  // Clean any residual raw backtick text
-  html = html.replace(/[`\u2018\u2019\u201C\u201D]{2,}\s*[a-zA-Z]*/g, "");
-
-  // Convert headers & bold
+  // Strip out any unhandled triple backticks or weird ``` text remnants
   html = html
-    .replace(/### Question/g, '<div style="font-weight:700;color:var(--exam-accent);margin-top:10px">Problem:</div>')
+    .replace(/```[a-z]*/gi, "")
+    .replace(/```/g, "")
+    .replace(/### Question/gi, '<div style="font-weight:700;color:var(--exam-accent);margin-top:10px">Problem:</div>')
     .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#fff">$1</strong>')
     .replace(/\n\n/g, '<br/>');
 
