@@ -193,10 +193,10 @@ def get_placement_exam() -> dict:
     
     # Fetch MCQs
     mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
-    if len(mcqs) < 30:
-        # Seed standard placement MCQs to reach 30 if needed
-        needed = 30 - len(mcqs)
-        _seed_placement_mcqs(needed)
+    if len(mcqs) < 30 or any(m.get("id", "").startswith("pmcq_") and m.get("correct_option") == 0 for m in mcqs[1:5]):
+        # Re-seed benchmark placement MCQs if needed
+        col.delete_many({"id": {"$regex": "^pmcq_"}})
+        _seed_placement_mcqs(30)
         mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
 
     # Fetch Coding questions
@@ -205,6 +205,10 @@ def get_placement_exam() -> dict:
         needed = 3 - len(coding)
         _seed_placement_coding(needed)
         coding = list(col.find({"type": {"$ne": "mcq"}}, {"_id": 0}))
+
+    # Shuffle questions each time candidate attends the test
+    random.shuffle(mcqs)
+    random.shuffle(coding)
 
     selected_mcqs = mcqs[:30]
     selected_coding = coding[:3]
@@ -236,14 +240,22 @@ def get_placement_exam() -> dict:
             item["options"] = all_choices
             item["active_correct_index"] = all_choices.index(correct_ans)
         else:
-            # Standard MCQ: Shuffle options randomly so correct answer isn't always in position 0
+            # Standard MCQ: Shuffle options randomly so correct answer position is unpredictable
             opts = list(m.get("options", []))
-            orig_correct_idx = m.get("correct_option", 0)
+            orig_correct_idx = int(m.get("correct_option", 0))
             if opts and 0 <= orig_correct_idx < len(opts):
                 correct_val = opts[orig_correct_idx]
-                random.shuffle(opts)
+                # Keep shuffling until correct_val is not at index 0 (if options count >= 2)
+                if len(opts) > 1:
+                    while opts[0] == correct_val:
+                        random.shuffle(opts)
+                else:
+                    random.shuffle(opts)
                 item["options"] = opts
                 item["active_correct_index"] = opts.index(correct_val)
+            else:
+                item["options"] = opts
+                item["active_correct_index"] = orig_correct_idx
 
         safe_mcqs.append(item)
 
