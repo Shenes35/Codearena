@@ -232,7 +232,7 @@ function addVariationSet(defaultVals = [], correctAns = "", distractors = ["", "
   </div>`;
 
   if (placeholderCount > 0) {
-    html += `<div style="display:grid;grid-template-columns:repeat(${placeholderCount}, 1fr);gap:8px;margin-bottom:8px">`;
+    html += `<div class="var-vals-container" style="display:grid;grid-template-columns:repeat(${Math.min(placeholderCount, 4)}, 1fr);gap:8px;margin-bottom:8px">`;
     for (let i = 0; i < placeholderCount; i++) {
       const val = defaultVals[i] || "";
       html += `<div>
@@ -271,10 +271,33 @@ document.getElementById("btn-add-mcq-var-set")?.addEventListener("click", () => 
 document.getElementById("q-description")?.addEventListener("input", (e) => {
   const count = countPlaceholders(e.target.value);
   const varSection = document.getElementById("mcq-variations-list")?.closest(".card");
-  if (count > 0 && varSection) {
-    varSection.classList.remove("hidden");
-    if (document.querySelectorAll("#mcq-variations-list .card").length === 0) {
-      addVariationSet();
+  if (varSection) {
+    if (count > 0) {
+      varSection.classList.remove("hidden");
+      // Re-render variation sets if placeholder count changed
+      const cards = document.querySelectorAll("#mcq-variations-list .card");
+      if (cards.length === 0) {
+        addVariationSet();
+      } else {
+        cards.forEach(card => {
+          const inputsContainer = card.querySelector(".var-vals-container");
+          if (inputsContainer) {
+            const currentInputs = Array.from(inputsContainer.querySelectorAll("[data-role='var-val']")).map(i => i.value);
+            let html = "";
+            for (let i = 0; i < count; i++) {
+              const val = currentInputs[i] || "";
+              html += `<div>
+                <label style="font-size:11px;color:var(--text-secondary)">Value for {} #${i+1}</label>
+                <input type="text" class="form-control form-control-sm" placeholder="e.g. 30" data-role="var-val" value="${escHtml(val)}" />
+              </div>`;
+            }
+            inputsContainer.style.gridTemplateColumns = `repeat(${Math.min(count, 4)}, 1fr)`;
+            inputsContainer.innerHTML = html;
+          }
+        });
+      }
+    } else {
+      varSection.classList.add("hidden");
     }
   }
 });
