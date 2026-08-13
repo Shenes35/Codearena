@@ -193,10 +193,10 @@ def get_placement_exam() -> dict:
     
     # Fetch MCQs
     mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
-    if len(mcqs) < 50:
-        # Re-seed expanded 2024 and 2025 benchmark placement MCQs
+    if len(mcqs) < 70:
+        # Re-seed expanded 2024 and 2025 benchmark placement & technical MCQs
         col.delete_many({"id": {"$regex": "^pmcq_"}})
-        _seed_placement_mcqs(60)
+        _seed_placement_mcqs(100)
         mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
 
     # Fetch Coding questions
@@ -335,15 +335,47 @@ def evaluate_placement_exam(submission: dict) -> dict:
     total_mcqs = len(mcq_results) if len(mcq_results) > 0 else 30
     max_possible_score = total_mcqs * 3
 
+    # Log submission to MongoDB Leaderboard collection
+    user_email = submission.get("user_email", "Guest")
+    scores_col = _get_col().database["placement_scores"]
+    
+    score_entry = {
+        "user_email": user_email,
+        "score": total_score,
+        "mcq_correct": mcq_correct_count,
+        "mcq_wrong": mcq_wrong_count,
+        "mcq_unattempted": mcq_unattempted_count,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    scores_col.insert_one(score_entry)
+
+    # Calculate candidate rank relative to all placement test attempts
+    higher_scores = scores_col.count_documents({"score": {"$gt": total_score}})
+    rank = higher_scores + 1
+    total_candidates = scores_col.count_documents({})
+
     return {
         "score": total_score,
         "max_possible_score": max_possible_score,
+        "rank": rank,
+        "total_candidates": total_candidates,
         "mcq_correct": mcq_correct_count,
         "mcq_wrong": mcq_wrong_count,
         "mcq_unattempted": mcq_unattempted_count,
         "mcq_total": total_mcqs,
         "mcq_details": mcq_results,
         "coding_submitted": len(coding_submissions)
+    }
+
+
+def get_leaderboard() -> dict:
+    """Return top leaderboard scores and recent test progress."""
+    scores_col = _get_col().database["placement_scores"]
+    top_scores = list(scores_col.find({}, {"_id": 0}).sort("score", -1).limit(10))
+    total_attempts = scores_col.count_documents({})
+    return {
+        "top_leaderboard": top_scores,
+        "total_attempts": total_attempts
     }
 
 
@@ -839,12 +871,169 @@ def _seed_placement_mcqs(count: int):
             "correct": 1,
             "explanation": "Ephemeral means short-lived or temporary ('Transient')."
         },
+        # 2024 Technical Assessment Questions
         {
-            "title": "Reading Comprehension - Industrial Revolution (2024)",
-            "desc": "Passage: 'The industrial revolution led to a significant increase in urban populations as people moved to cities in search of work.' What was a major consequence?",
-            "opts": ["Rural population growth", "Significant increase in urban populations as people moved to cities for work", "Decrease in manufacturing", "Decline of cities"],
+            "title": "C Programming Output - Increment Sequence (2024)",
+            "desc": "What is the output?\n\nint main() {\n    int x = 5;\n    printf(\"%d\", x++ + ++x);\n    return 0;\n}",
+            "opts": ["10", "11", "12", "13"],
+            "correct": 2,
+            "explanation": "Note: Undefined behavior. Many compilers compute: x++ uses 5 (x=6), then ++x makes x=7, yielding 5 + 7 = 12."
+        },
+        {
+            "title": "Loop Output - Continue Statement (2024)",
+            "desc": "What is the output?\n\nint main() {\n    int i;\n    for(i=0; i<5; i++) {\n        if(i == 3) continue;\n        printf(\"%d \", i);\n    }\n    return 0;\n}",
+            "opts": ["0 1 2 3 4", "0 1 2 4", "0 1 2", "1 2 4"],
             "correct": 1,
-            "explanation": "Urban population grew significantly as people migrated for jobs."
+            "explanation": "Loop prints 0 1 2, skips i=3 due to continue, then prints 4."
+        },
+        {
+            "title": "Array Pointer Manipulation (2024)",
+            "desc": "What is the output?\n\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = arr;\n    printf(\"%d %d\", *(p+2), arr[3]);\n    return 0;\n}",
+            "opts": ["2 3", "3 4", "3 5", "2 4"],
+            "correct": 1,
+            "explanation": "*(p+2) is arr[2] = 3. arr[3] = 4. Output: 3 4."
+        },
+        {
+            "title": "Recursion Output - Factorial (2024)",
+            "desc": "What is the output?\n\nint func(int n) {\n    if(n <= 1) return 1;\n    return n * func(n-1);\n}\nprintf(\"%d\", func(5));",
+            "opts": ["24", "120", "720", "60"],
+            "correct": 1,
+            "explanation": "Calculates 5! = 5 × 4 × 3 × 2 × 1 = 120."
+        },
+        {
+            "title": "Java Output - Pre & Post Increment (2024)",
+            "desc": "What is the output?\n\npublic class Test {\n    public static void main(String[] args) {\n        int x = 10;\n        System.out.println(x++ + ++x);\n    }\n}",
+            "opts": ["20", "21", "22", "24"],
+            "correct": 2,
+            "explanation": "x++ uses 10 (x becomes 11), ++x evaluates to 12. Total = 10 + 12 = 22."
+        },
+        {
+            "title": "Python Output - Step Recursion (2024)",
+            "desc": "What is the output?\n\ndef func(n):\n    if n <= 1:\n        return 1\n    return n * func(n-2)\n\nprint(func(6))",
+            "opts": ["24", "48", "96", "120"],
+            "correct": 1,
+            "explanation": "func(6) = 6 × func(4) = 6 × (4 × func(2)) = 6 × 4 × (2 × func(0)) = 6 × 4 × 2 × 1 = 48."
+        },
+        {
+            "title": "Pointer Arithmetic Output (2024)",
+            "desc": "What is the output?\n\nint main() {\n    int arr[] = {10, 20, 30, 40, 50};\n    int *ptr = arr + 2;\n    printf(\"%d\", *(ptr+1));\n    return 0;\n}",
+            "opts": ["20", "30", "40", "50"],
+            "correct": 2,
+            "explanation": "ptr points to arr[2] (30). ptr+1 points to arr[3] (40)."
+        },
+        {
+            "title": "String Operations - strlen (2024)",
+            "desc": "What is the output?\n\nint main() {\n    char str[] = \"HELLO\";\n    printf(\"%d\", strlen(str));\n    return 0;\n}",
+            "opts": ["4", "5", "6", "0"],
+            "correct": 1,
+            "explanation": "'HELLO' contains 5 characters (excluding null terminator)."
+        },
+        {
+            "title": "Pseudo Code - Value Swap (2024)",
+            "desc": "What will be the output?\n\nBegin\n  Integer x = 10\n  Integer y = 5\n  x = x + y\n  y = x - y\n  x = x - y\n  Print x, y\nEnd",
+            "opts": ["x = 10, y = 5", "x = 5, y = 10", "x = 15, y = 5", "x = 5, y = 5"],
+            "correct": 1,
+            "explanation": "Swaps x and y without temp variable. Final values: x = 5, y = 10."
+        },
+        {
+            "title": "Networking - OSI Model Layer (2024)",
+            "desc": "Which layer of the OSI model is responsible for end-to-end communication and error-free delivery of data?",
+            "opts": ["a) Network Layer", "b) Transport Layer", "c) Session Layer", "d) Data Link Layer"],
+            "correct": 1,
+            "explanation": "Transport Layer (Layer 4) provides end-to-end communication and reliability."
+        },
+
+        # 2025 Technical Assessment Questions
+        {
+            "title": "C Output - Post and Pre Increment Dual Printf (2025)",
+            "desc": "What is the output?\n\nint main() {\n    int a = 5, b = 10;\n    printf(\"%d %d\", a++, ++b);\n    printf(\" %d %d\", a, b);\n    return 0;\n}",
+            "opts": ["5 10 6 11", "5 11 6 11", "6 11 6 11", "5 11 5 11"],
+            "correct": 1,
+            "explanation": "a++ uses 5 (a becomes 6), ++b makes b=11. First printf: 5 11. Second printf: 6 11."
+        },
+        {
+            "title": "Loop with Break Output (2025)",
+            "desc": "What is the output?\n\nint main() {\n    int i;\n    for(i=1; i<=10; i++) {\n        if(i == 5) break;\n        printf(\"%d \", i);\n    }\n    return 0;\n}",
+            "opts": ["1 2 3 4 5", "1 2 3 4", "1 2 3 4 5 6 7 8 9 10", "5"],
+            "correct": 1,
+            "explanation": "Loop prints 1 2 3 4 and breaks when i == 5."
+        },
+        {
+            "title": "Array and Pointer Indexing (2025)",
+            "desc": "What is the output?\n\nint main() {\n    int arr[] = {10, 20, 30, 40};\n    int *p = arr;\n    printf(\"%d %d\", *p, *(p+3));\n    return 0;\n}",
+            "opts": ["10 30", "10 40", "20 40", "10 20"],
+            "correct": 1,
+            "explanation": "*p is arr[0] = 10. *(p+3) is arr[3] = 40."
+        },
+        {
+            "title": "Recursion - Natural Sum (2025)",
+            "desc": "What is the output?\n\nint sum(int n) {\n    if(n == 0) return 0;\n    return n + sum(n-1);\n}\nprintf(\"%d\", sum(5));",
+            "opts": ["10", "15", "20", "25"],
+            "correct": 1,
+            "explanation": "Calculates 5 + 4 + 3 + 2 + 1 + 0 = 15."
+        },
+        {
+            "title": "Java Output - String Comparison (2025)",
+            "desc": "What is the output?\n\npublic class Test {\n    public static void main(String[] args) {\n        String s1 = \"Hello\";\n        String s2 = new String(\"Hello\");\n        System.out.println(s1 == s2);\n        System.out.println(s1.equals(s2));\n    }\n}",
+            "opts": ["true true", "false true", "true false", "false false"],
+            "correct": 1,
+            "explanation": "== checks reference identity (false), .equals() checks text content (true)."
+        },
+        {
+            "title": "Python Output - Recursive List Sum (2025)",
+            "desc": "What is the output?\n\ndef func(lst):\n    if len(lst) == 0:\n        return 0\n    return lst[0] + func(lst[1:])\n\nprint(func([1, 2, 3, 4]))",
+            "opts": ["6", "10", "24", "0"],
+            "correct": 1,
+            "explanation": "Recursively sums elements: 1 + 2 + 3 + 4 + 0 = 10."
+        },
+        {
+            "title": "Pointer Arithmetic - Negative Index (2025)",
+            "desc": "What is the output?\n\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = &arr[2];\n    printf(\"%d %d\", p[-1], p[1]);\n    return 0;\n}",
+            "opts": ["1 3", "2 4", "3 5", "2 3"],
+            "correct": 1,
+            "explanation": "p points to arr[2] (3). p[-1] is arr[1] = 2. p[1] is arr[3] = 4."
+        },
+        {
+            "title": "Nested Loops - Right Triangle Pattern (2025)",
+            "desc": "What is the output?\n\nint main() {\n    int i, j;\n    for(i=1; i<=3; i++) {\n        for(j=1; j<=i; j++) {\n            printf(\"%d\", j);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+            "opts": ["1\\n12\\n123", "123\\n123\\n123", "1\\n22\\n333", "321"],
+            "correct": 0,
+            "explanation": "Prints 1 on line 1, 12 on line 2, 123 on line 3."
+        },
+        {
+            "title": "Abstract Reasoning - Shape Sequence (2025)",
+            "desc": "Identify the next shape in the sequence: Circle, Square, Triangle, Circle, Square, ?",
+            "opts": ["Circle", "Square", "Triangle", "Hexagon"],
+            "correct": 2,
+            "explanation": "Sequence repeats every 3 shapes (Circle, Square, Triangle)."
+        },
+        {
+            "title": "Pseudo Code - Simple Addition (2025)",
+            "desc": "What will be the output?\n\nBegin\n    Set A = 10\n    Set B = 20\n    Set C = A + B\n    Print C\nEnd",
+            "opts": ["10", "20", "30", "1020"],
+            "correct": 2,
+            "explanation": "Prints C = 10 + 20 = 30."
+        },
+        {
+            "title": "Networking - Secure Protocol (2025)",
+            "desc": "Which of the following is a common protocol used for secure communication over the internet?",
+            "opts": ["a) HTTP", "b) FTP", "c) HTTPS", "d) SMTP"],
+            "correct": 2,
+            "explanation": "HTTPS (HyperText Transfer Protocol Secure) provides encrypted web communication."
+        },
+        {
+            "title": "Statement & Assumption - Assignment Deadline (2025)",
+            "desc": "Statement: 'All students must submit their assignments by Friday.' Assumption: Students are aware of the deadline. Is the assumption valid?",
+            "opts": ["Yes, the assumption is valid", "No, invalid", "Irrelevant", "Cannot say"],
+            "correct": 0,
+            "explanation": "Valid assumption because instructions imply students are informed of the deadline."
+        },
+        {
+            "title": "Cause and Effect - Company Profits (2025)",
+            "desc": "Event 1: Company reported significant increase in profits. Event 2: Company launched a new product line. Relationship?",
+            "opts": ["Event 1 is cause, Event 2 is effect", "Event 2 is the cause, Event 1 is the effect", "Independent events", "Both are causes"],
+            "correct": 1,
+            "explanation": "Launching a new product line (Event 2) leads to profit increase (Event 1)."
         }
     ]
 

@@ -435,9 +435,16 @@ function showResultModal(res) {
   
   const score = res.score ?? 0;
   const maxScore = res.max_possible_score ?? (res.mcq_total * 3);
+  const rank = res.rank ?? 1;
+
+  // Persist student progress to localStorage for front page display
+  localStorage.setItem("codearena_last_score", score);
+  localStorage.setItem("codearena_last_rank", rank);
+  let prevAttempts = parseInt(localStorage.getItem("codearena_test_attempts") || "0", 10);
+  localStorage.setItem("codearena_test_attempts", prevAttempts + 1);
 
   document.getElementById("score-percentage-circle").innerHTML = `${score}<span>Points</span>`;
-  document.getElementById("res-total-marks").textContent = `${score} / ${maxScore} Points`;
+  document.getElementById("res-total-marks").textContent = `${score} / ${maxScore} Points (Rank #${rank})`;
   document.getElementById("res-correct-count").textContent = `${res.mcq_correct || 0} (+${(res.mcq_correct || 0) * 3} pts)`;
   document.getElementById("res-wrong-count").textContent = `${res.mcq_wrong || 0} (-${res.mcq_wrong || 0} pts)`;
   document.getElementById("res-unattempted-count").textContent = `${res.mcq_unattempted || 0} (0 pts)`;

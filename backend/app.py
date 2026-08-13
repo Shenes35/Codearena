@@ -251,6 +251,12 @@ def submit_placement_exam():
     return jsonify(evaluation)
 
 
+@app.get("/questions/placement/leaderboard")
+def get_placement_leaderboard():
+    """Get placement exam rank leaderboard and user progress."""
+    return jsonify(qs.get_leaderboard())
+
+
 # ─────────────────────────────────────────────
 # Entry point
 # ─────────────────────────────────────────────

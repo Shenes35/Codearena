@@ -148,5 +148,34 @@ function applyFilters() {
   renderGrid(filtered);
 }
 
+// ── User Rank & Progress Banner ────────────────────────────
+async function loadUserRankProgress() {
+  const banner = document.getElementById("user-rank-banner");
+  if (!banner) return;
+
+  // Retrieve user test history from localStorage or API
+  let lastScore = localStorage.getItem("codearena_last_score");
+  let lastRank = localStorage.getItem("codearena_last_rank");
+  let attempts = localStorage.getItem("codearena_test_attempts") || "0";
+
+  try {
+    const res = await fetch(`${API_BASE}/questions/placement/leaderboard`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.total_attempts) {
+        attempts = data.total_attempts;
+      }
+    }
+  } catch(e) {}
+
+  if (lastScore !== null || attempts > 0) {
+    banner.style.display = "block";
+    document.getElementById("user-last-mark").textContent = `${lastScore ?? 0} pts`;
+    document.getElementById("user-current-rank").textContent = `#${lastRank ?? 1}`;
+    document.getElementById("user-test-attempts").textContent = attempts;
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────
 loadQuestions();
+loadUserRankProgress();
