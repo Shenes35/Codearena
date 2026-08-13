@@ -165,30 +165,59 @@ let examResultDetails = null;
 
 function formatMcqCodeBlocks(text) {
   if (!text) return "";
-  if (text.includes("```")) return text; // Already formatted with Markdown code block
-
-  // Pattern matching for unformatted single-line code blocks (e.g. int main() { ... })
-  const codeRegex = /(int main\s*\([^)]*\)\s*\{[\s\S]*\}|public class[\s\S]*\}|def func\s*\([^)]*\):[\s\S]*|\bfor\s*\([^)]*\)\s*\{[\s\S]*\}|\bBegin\b[\s\S]*\bEnd\b)/i;
   
-  if (codeRegex.test(text)) {
-    return text.replace(codeRegex, (match) => {
-      // Format single line statements with proper newlines
-      let formattedCode = match
-        .replace(/;\s*/g, ';\n  ')
-        .replace(/\{\s*/g, '{\n  ')
-        .replace(/\}\s*/g, '\n}\n')
-        .replace(/:\s*/g, ':\n  ')
-        .replace(/\n\s*\n/g, '\n');
+  // Clean backticks formatting issues
+  let cleanText = text
+    .replace(/```([a-z]*)\s*/gi, "\n```$1\n")
+    .replace(/\s*```/g, "\n```\n");
 
-      let lang = "c";
-      if (match.includes("class") || match.includes("System.out")) lang = "java";
-      else if (match.includes("def ")) lang = "python";
-      else if (match.includes("Begin")) lang = "text";
+  // If text has code keywords but no code blocks, wrap them into code blocks
+  if (!cleanText.includes("```")) {
+    const codeRegex = /(int main\s*\([^)]*\)[\s\S]*\}|public class[\s\S]*\}|def func[\s\S]*|Set A =[\s\S]*End)/i;
+    if (codeRegex.test(cleanText)) {
+      cleanText = cleanText.replace(codeRegex, (match) => {
+        let lines = match
+          .replace(/;\s*/g, ';\n')
+          .replace(/\{\s*/g, '{\n')
+          .replace(/\}\s*/g, '\n}\n')
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => l.length > 0)
+          .join('\n');
 
-      return `\n\n\`\`\`${lang}\n${formattedCode.trim()}\n\`\`\`\n\n`;
-    });
+        let lang = "c";
+        if (match.includes("class") || match.includes("System.out")) lang = "java";
+        else if (match.includes("def ")) lang = "python";
+        else if (match.includes("Set A")) lang = "text";
+
+        return `\n\n\`\`\`${lang}\n${lines}\n\`\`\`\n\n`;
+      });
+    }
   }
-  return text;
+
+  return cleanText;
+}
+
+function parseMarkdownToHtml(markdownText) {
+  if (typeof marked !== "undefined" && typeof marked.parse === "function") {
+    try {
+      return marked.parse(markdownText);
+    } catch(e) {}
+  }
+  
+  // Custom fallback Markdown parser for headers, code blocks, and bold text
+  let html = markdownText
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+  // Convert ```code``` blocks
+  html = html.replace(/```([a-z]*)\n([\s\S]*?)\n```/gi, (match, lang, code) => {
+    return `<pre><code class="language-${lang}">${code.trim()}</code></pre>`;
+  });
+
+  // Convert ### Headers
+  html = html.replace(/^### (.*$)/gim, '<h4 style="color:var(--exam-accent);margin:12px 0 6px 0">$1</h4>');
+  html = html.replace(/\n\n/g, '<br/><br/>');
+  return html;
 }
 
 function renderCurrentMcq() {
@@ -199,14 +228,9 @@ function renderCurrentMcq() {
   document.getElementById("mcq-diff-display").textContent = q.difficulty || "Medium";
   
   const titleElem = document.getElementById("mcq-title-display");
-  const rawText = `${q.title}:\n\n${q.description}`;
+  const rawText = `**${q.title}**\n\n${q.description}`;
   const formattedText = formatMcqCodeBlocks(rawText);
-
-  if (typeof marked !== "undefined") {
-    titleElem.innerHTML = marked.parse(formattedText);
-  } else {
-    titleElem.textContent = formattedText;
-  }
+  titleElem.innerHTML = parseMarkdownToHtml(formattedText);
 
   const wrapper = document.getElementById("mcq-options-wrapper");
   wrapper.innerHTML = "";
