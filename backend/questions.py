@@ -162,6 +162,8 @@ def add(data: dict) -> dict:
     if q_type == "mcq":
         question["options"] = data.get("options", [])
         question["correct_option"] = int(data.get("correct_option", 0))
+        if "variation_sets" in data:
+            question["variation_sets"] = data["variation_sets"]
     else:
         question["input_format"]  = data.get("input_format", "")
         question["output_format"] = data.get("output_format", "")
@@ -185,6 +187,8 @@ def get_placement_exam() -> dict:
     Get 30 MCQs and 3 Coding questions for placement exam.
     If database does not have 30 MCQs or 3 coding questions, auto-generate standard placement questions.
     """
+    import random
+
     col = _get_col()
     
     # Fetch MCQs
@@ -208,7 +212,30 @@ def get_placement_exam() -> dict:
     # Prepare client-safe payload
     safe_mcqs = []
     for m in selected_mcqs:
-        item = {k: v for k, v in m.items() if k != "correct_option"}
+        item = {k: v for k, v in m.items() if k not in ("correct_option", "variation_sets")}
+        
+        # If question has admin-provided variation sets with {} placeholders
+        var_sets = m.get("variation_sets", [])
+        if var_sets:
+            # Pick one variation set randomly
+            chosen_set = random.choice(var_sets)
+            replacements = chosen_set.get("replacements", [])
+            desc = m.get("description", "")
+
+            # Substitute each {} with corresponding replacement value
+            for val in replacements:
+                desc = desc.replace("{}", str(val), 1)
+            item["description"] = desc
+
+            # Construct 4 options (1 correct answer + 3 wrong distractors)
+            correct_ans = chosen_set.get("correct_answer", "")
+            distractors = chosen_set.get("distractors", [])
+            all_choices = [correct_ans] + distractors
+            random.shuffle(all_choices)
+
+            item["options"] = all_choices
+            item["active_correct_index"] = all_choices.index(correct_ans)
+
         safe_mcqs.append(item)
 
     safe_coding = []
@@ -230,11 +257,6 @@ def get_placement_exam() -> dict:
 def evaluate_placement_exam(submission: dict) -> dict:
     """
     Evaluate candidate placement exam submission.
-    submission format:
-    {
-      "mcq_answers": {"q_id": selected_option_index, ...},
-      "coding_submissions": {"q_id": {"code": "...", "language": "python"}, ...}
-    }
     """
     col = _get_col()
     mcq_answers = submission.get("mcq_answers", {})
@@ -247,8 +269,14 @@ def evaluate_placement_exam(submission: dict) -> dict:
 
     for qid, q_data in all_mcqs.items():
         if qid in mcq_answers:
-            user_ans = int(mcq_answers[qid])
-            correct_ans = int(q_data.get("correct_option", 0))
+            ans_info = mcq_answers[qid]
+            if isinstance(ans_info, dict):
+                user_ans = int(ans_info.get("selected", -1))
+                correct_ans = int(ans_info.get("correct_idx", 0))
+            else:
+                user_ans = int(ans_info)
+                correct_ans = int(q_data.get("correct_option", 0))
+
             is_correct = (user_ans == correct_ans)
             if is_correct:
                 mcq_correct_count += 1
@@ -260,7 +288,7 @@ def evaluate_placement_exam(submission: dict) -> dict:
                 "is_correct": is_correct
             })
 
-    total_mcqs = len(all_mcqs) if len(all_mcqs) > 0 else 30
+    total_mcqs = len(mcq_answers) if len(mcq_answers) > 0 else 30
     mcq_percentage = (mcq_correct_count / max(total_mcqs, 1)) * 100
 
     return {

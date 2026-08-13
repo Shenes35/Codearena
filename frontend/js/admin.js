@@ -204,19 +204,98 @@ addMcqOption("Option B", false);
 addMcqOption("Option C", false);
 addMcqOption("Option D", false);
 
-function collectMcqOptions() {
-  const rows = document.querySelectorAll("#mcq-options-list .test-case-row");
-  const options = [];
-  let correctIndex = 0;
-  rows.forEach((row, i) => {
-    const text = row.querySelector("[data-role='option-text']")?.value?.trim() ?? "";
-    const isChecked = row.querySelector("input[type='radio']")?.checked ?? false;
-    if (text) {
-      options.push(text);
-      if (isChecked) correctIndex = options.length - 1;
+// ── MCQ Dynamic Variation Sets ({}) ─────────────────────────
+let variationSetCount = 0;
+
+function countPlaceholders(text) {
+  const matches = text.match(/\{\}/g);
+  return matches ? matches.length : 0;
+}
+
+function addVariationSet(defaultVals = [], correctAns = "", distractors = ["", "", ""]) {
+  const descText = document.getElementById("q-description")?.value || "";
+  const placeholderCount = countPlaceholders(descText);
+  variationSetCount++;
+  const id = `var-set-${variationSetCount}`;
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.id = id;
+  card.style.background = "var(--exam-card, #1a2234)";
+  card.style.padding = "12px";
+  card.style.borderRadius = "8px";
+  card.style.border = "1px solid var(--border-color, #2a344a)";
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:13px;color:var(--accent)">Set #${variationSetCount}</strong>
+    <button class="btn btn-danger btn-sm" onclick="removeRow('${id}')">✕ Delete Set</button>
+  </div>`;
+
+  if (placeholderCount > 0) {
+    html += `<div style="display:grid;grid-template-columns:repeat(${placeholderCount}, 1fr);gap:8px;margin-bottom:8px">`;
+    for (let i = 0; i < placeholderCount; i++) {
+      const val = defaultVals[i] || "";
+      html += `<div>
+        <label style="font-size:11px;color:var(--text-secondary)">Value for {} #${i+1}</label>
+        <input type="text" class="form-control form-control-sm" placeholder="e.g. 30" data-role="var-val" value="${escHtml(val)}" />
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+    <div>
+      <label style="font-size:11px;color:var(--green, #10b981);font-weight:600">Correct Answer *</label>
+      <input type="text" class="form-control form-control-sm" style="border-color:var(--green, #10b981)" placeholder="e.g. 23.08%" data-role="var-ans" value="${escHtml(correctAns)}" />
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--text-secondary)">Wrong Choice 1</label>
+      <input type="text" class="form-control form-control-sm" placeholder="e.g. 30%" data-role="var-distractor" value="${escHtml(distractors[0] || '')}" />
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--text-secondary)">Wrong Choice 2</label>
+      <input type="text" class="form-control form-control-sm" placeholder="e.g. 20%" data-role="var-distractor" value="${escHtml(distractors[1] || '')}" />
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--text-secondary)">Wrong Choice 3</label>
+      <input type="text" class="form-control form-control-sm" placeholder="e.g. 25%" data-role="var-distractor" value="${escHtml(distractors[2] || '')}" />
+    </div>
+  </div>`;
+
+  card.innerHTML = html;
+  document.getElementById("mcq-variations-list").appendChild(card);
+}
+
+document.getElementById("btn-add-mcq-var-set")?.addEventListener("click", () => addVariationSet());
+
+document.getElementById("q-description")?.addEventListener("input", (e) => {
+  const count = countPlaceholders(e.target.value);
+  const varSection = document.getElementById("mcq-variations-list")?.closest(".card");
+  if (count > 0 && varSection) {
+    varSection.classList.remove("hidden");
+    if (document.querySelectorAll("#mcq-variations-list .card").length === 0) {
+      addVariationSet();
+    }
+  }
+});
+
+function collectVariationSets() {
+  const sets = [];
+  const cards = document.querySelectorAll("#mcq-variations-list .card");
+  cards.forEach(card => {
+    const vals = Array.from(card.querySelectorAll("[data-role='var-val']")).map(input => input.value.trim());
+    const ans = card.querySelector("[data-role='var-ans']")?.value?.trim() || "";
+    const distractors = Array.from(card.querySelectorAll("[data-role='var-distractor']")).map(input => input.value.trim()).filter(Boolean);
+
+    if (ans) {
+      sets.push({
+        replacements: vals,
+        correct_answer: ans,
+        distractors: distractors
+      });
     }
   });
-  return { options, correctIndex };
+  return sets;
 }
 
 // ── Create Question ────────────────────────────────────────
@@ -246,13 +325,21 @@ document.getElementById("btn-create-question").addEventListener("click", async (
   let payload = { title, description, difficulty, time_limit: timeLimit, type, is_placement: isPlacement };
 
   if (type === "mcq") {
-    const { options, correctIndex } = collectMcqOptions();
-    if (options.length < 2) {
-      showFeedback("error", "At least two options are required for an MCQ.");
-      return;
+    const variationSets = collectVariationSets();
+    if (variationSets.length > 0) {
+      payload.variation_sets = variationSets;
+      // Default placeholder options fallback
+      payload.options = ["Option A", "Option B", "Option C", "Option D"];
+      payload.correct_option = 0;
+    } else {
+      const { options, correctIndex } = collectMcqOptions();
+      if (options.length < 2) {
+        showFeedback("error", "At least two options are required for an MCQ.");
+        return;
+      }
+      payload.options = options;
+      payload.correct_option = correctIndex;
     }
-    payload.options = options;
-    payload.correct_option = correctIndex;
   } else {
     const inputFmt  = document.getElementById("q-input-format").value.trim();
     const outputFmt = document.getElementById("q-output-format").value.trim();

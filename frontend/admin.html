@@ -140,10 +140,27 @@
           </div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
             <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">
-              Enter option text and select the radio button next to the correct answer:
+              Enter option choices for standard questions and select the radio button next to the correct answer:
             </div>
             <div id="mcq-options-list" style="display:flex;flex-direction:column;gap:8px">
               <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- MCQ Dynamic Variations Section (when {} placeholders are detected in description) -->
+        <div class="card mcq-field hidden" style="border:1px solid var(--accent);background:rgba(6, 182, 212, 0.03)">
+          <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;color:var(--accent)">
+            ⚡ Variable Replacements & Answer Sets ({})
+            <button class="btn btn-primary btn-sm" id="btn-add-mcq-var-set">+ Add Variation Set</button>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;color:var(--text-secondary)">
+              Use <code>{}</code> in the description for numbers (e.g. <em>"Price increased by {}%. Ratio is {}:{}"</em>).<br/>
+              Add variation rows with values for each <code>{}</code> plus the <strong>Correct Answer</strong> & 3 <strong>Wrong Distractors</strong>:
+            </div>
+            <div id="mcq-variations-list" style="display:flex;flex-direction:column;gap:12px">
+              <!-- Populated by admin.js when {} placeholders exist -->
             </div>
           </div>
         </div>

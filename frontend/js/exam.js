@@ -171,28 +171,32 @@ function renderCurrentMcq() {
   const wrapper = document.getElementById("mcq-options-wrapper");
   wrapper.innerHTML = "";
 
-  const selectedOpt = userState.mcqAnswers[q.id];
+    const savedAns = userState.mcqAnswers[q.id];
+    const selectedOpt = (typeof savedAns === "object") ? savedAns.selected : savedAns;
 
-  (q.options || []).forEach((optText, idx) => {
-    const label = document.createElement("label");
-    label.className = `mcq-option-label ${selectedOpt === idx ? "selected" : ""}`;
-    
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.name = `opt_${q.id}`;
-    radio.className = "mcq-option-radio";
-    radio.checked = selectedOpt === idx;
-    radio.addEventListener("change", () => {
-      userState.mcqAnswers[q.id] = idx;
-      renderCurrentMcq();
-      renderMcqPalette();
-    });
+    (q.options || []).forEach((optText, idx) => {
+      const label = document.createElement("label");
+      label.className = `mcq-option-label ${selectedOpt === idx ? "selected" : ""}`;
+      
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `opt_${q.id}`;
+      radio.className = "mcq-option-radio";
+      radio.checked = selectedOpt === idx;
+      radio.addEventListener("change", () => {
+        userState.mcqAnswers[q.id] = {
+          selected: idx,
+          correct_idx: (q.active_correct_index !== undefined) ? q.active_correct_index : (q.correct_option || 0)
+        };
+        renderCurrentMcq();
+        renderMcqPalette();
+      });
 
-    const span = document.createElement("span");
-    span.textContent = optText;
+      const span = document.createElement("span");
+      span.textContent = optText;
 
-    label.appendChild(radio);
-    label.appendChild(span);
+      label.appendChild(radio);
+      label.appendChild(span);
     wrapper.appendChild(label);
   });
 }
