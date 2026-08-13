@@ -2,7 +2,10 @@
  * exam.js — Placement Exam Engine & State Manager
  */
 
-const API_BASE = "http://localhost:5000";
+// Dynamic API_BASE detection (Local vs Production Render)
+const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:5000"
+  : "https://codearena-r5yq.onrender.com";
 
 let examData = {
   mcqs: [],
@@ -72,7 +75,11 @@ async function fetchPlacementQuestions() {
     document.getElementById("coding-badge-count").textContent = `${examData.coding.length} Qs`;
   } catch (err) {
     console.error("Exam payload fetch error:", err);
-    alert("Backend connection issue. Make sure Flask app is running at port 5000.");
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      alert("Backend connection issue. Make sure your local Flask server is running at http://localhost:5000");
+    } else {
+      alert("Connecting to backend server... If backend on Render was asleep, please wait 30 seconds and refresh the page.");
+    }
   }
 }
 
