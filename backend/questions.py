@@ -193,10 +193,10 @@ def get_placement_exam() -> dict:
     
     # Fetch MCQs
     mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
-    if len(mcqs) < 30 or any(m.get("id", "").startswith("pmcq_") and m.get("correct_option") == 0 for m in mcqs[1:5]):
-        # Re-seed benchmark placement MCQs if needed
+    if len(mcqs) < 50:
+        # Re-seed expanded 2024 and 2025 benchmark placement MCQs
         col.delete_many({"id": {"$regex": "^pmcq_"}})
-        _seed_placement_mcqs(30)
+        _seed_placement_mcqs(60)
         mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
 
     # Fetch Coding questions
@@ -525,18 +525,326 @@ def _seed_placement_mcqs(count: int):
             "correct": 1
         },
 
-        # Verbal Ability (2 questions to complete total 30)
         {
-            "title": "Reading Comprehension - Inference (2025)",
-            "desc": "Passage: 'Cloud computing has transformed how businesses operate. Companies can now access computing resources on-demand without maintaining physical infrastructure. This has led to significant cost savings and increased flexibility.' What is the main advantage mentioned?",
-            "opts": ["Hardware ownership", "Cost savings and increased flexibility", "Increased security risks", "Manual server setup"],
-            "correct": 1
+            "title": "Vocabulary - Synonyms: MAGNIFICENT (2025)",
+            "desc": "Find the synonym of 'MAGNIFICENT':",
+            "opts": ["a) Ordinary", "b) Splendid", "c) Small", "d) Ugly"],
+            "correct": 1,
+            "explanation": "Magnificent means impressively beautiful or grand, so 'Splendid' is the synonym."
         },
         {
-            "title": "Grammar - Parallelism (2025)",
+            "title": "Vocabulary - Antonyms: BRILLIANT (2025)",
+            "desc": "Find the antonym of 'BRILLIANT':",
+            "opts": ["a) Bright", "b) Dull", "c) Shining", "d) Smart"],
+            "correct": 1,
+            "explanation": "Brilliant means very bright or intelligent, so 'Dull' is the antonym."
+        },
+        {
+            "title": "Sentence Correction - Vowel Sound (2025)",
             "desc": "Choose the correct sentence:",
-            "opts": ["a) She likes reading, writing, and to dance", "b) She likes reading, writing, and dancing", "c) She likes to read, writing, and dancing", "d) She likes read, write, and dancing"],
-            "correct": 1
+            "opts": ["a) He is a honest man", "b) He is an honest man", "c) He is the honest man", "d) He is honest man"],
+            "correct": 1,
+            "explanation": "'Honest' starts with a silent 'h' and a vowel sound, so 'an' is used."
+        },
+
+        # 2024 Quantitative Aptitude Questions
+        {
+            "title": "Profit & Loss - Markup & Discount (2024)",
+            "desc": "A shopkeeper marks an item 30% above cost price and gives 10% discount. Find his profit percentage.",
+            "opts": ["15%", "17%", "20%", "23%"],
+            "correct": 1,
+            "explanation": "Let CP = ₹100. MP = ₹130. SP = ₹130 - 10% of 130 = ₹117. Profit % = 17%."
+        },
+        {
+            "title": "Time & Work - Partial Work (2024)",
+            "desc": "A and B can complete a work in 20 days and 30 days respectively. They work together for 6 days, then A leaves. In how many days will B complete the remaining work?",
+            "opts": ["10 days", "12 days", "15 days", "18 days"],
+            "correct": 2,
+            "explanation": "A + B 1-day work = 1/20 + 1/30 = 1/12. In 6 days = 1/2. Remaining 1/2 work done by B in 15 days."
+        },
+        {
+            "title": "Percentage Calculation (2024)",
+            "desc": "If 20% of a number is 60, what is 35% of that number?",
+            "opts": ["90", "105", "120", "140"],
+            "correct": 1,
+            "explanation": "Number = 60 × 100/20 = 300. 35% of 300 = 105."
+        },
+        {
+            "title": "Ratio & Proportion - Age Ratio (2024)",
+            "desc": "The ratio of ages of A and B is 3:5. After 10 years, the ratio becomes 5:7. Find the present age of A.",
+            "opts": ["12 years", "15 years", "18 years", "25 years"],
+            "correct": 1,
+            "explanation": "(3x+10)/(5x+10) = 5/7 => x = 5. A's age = 3 × 5 = 15 years."
+        },
+        {
+            "title": "Simple Interest - Two Amounts (2024)",
+            "desc": "A sum of money becomes ₹2,400 in 2 years and ₹3,200 in 4 years at simple interest. Find the principal amount.",
+            "opts": ["₹1,200", "₹1,600", "₹1,800", "₹2,000"],
+            "correct": 1,
+            "explanation": "Interest for 2 yrs = 3200 - 2400 = ₹800. Principal = 2400 - 800 = ₹1,600."
+        },
+        {
+            "title": "Compound Interest - Annual (2024)",
+            "desc": "Find compound interest on ₹10,000 for 2 years at 10% per annum, compounded annually.",
+            "opts": ["₹2,000", "₹2,100", "₹2,200", "₹2,400"],
+            "correct": 1,
+            "explanation": "Amount = 10000 × (1.1)^2 = ₹12,100. CI = 12100 - 10000 = ₹2,100."
+        },
+        {
+            "title": "Speed & Distance - Platform Crossing (2024)",
+            "desc": "A train 150 meters long passes a platform 200 meters long in 20 seconds. Find the speed of the train in km/hr.",
+            "opts": ["54 km/hr", "63 km/hr", "72 km/hr", "80 km/hr"],
+            "correct": 1,
+            "explanation": "Total distance = 350m. Speed = 350/20 = 17.5 m/s = 17.5 × 18/5 = 63 km/hr."
+        },
+        {
+            "title": "Pipes & Cisterns - Filling & Emptying (2024)",
+            "desc": "Pipe A fills a tank in 10 hours and Pipe B empties it in 15 hours. How many hours will it take to fill a half empty tank?",
+            "opts": ["10 hours", "12 hours", "15 hours", "30 hours"],
+            "correct": 2,
+            "explanation": "Net rate = 1/10 - 1/15 = 1/30. Time for half tank = (1/2) / (1/30) = 15 hours."
+        },
+        {
+            "title": "Permutations - Code Words (2024)",
+            "desc": "A code word consists of two English alphabets followed by two distinct numbers between 1 and 9 (e.g. CA23). How many such code words are there?",
+            "opts": ["48,672", "52,480", "42,120", "65,536"],
+            "correct": 0,
+            "explanation": "Alphabets = 26 × 26 = 676. Numbers = 9 × 8 = 72. Total = 676 × 72 = 48,672."
+        },
+        {
+            "title": "Probability - Two Dice (2024)",
+            "desc": "Two dice are thrown. What is the probability of getting a sum of 7?",
+            "opts": ["1/6", "1/12", "5/36", "1/4"],
+            "correct": 0,
+            "explanation": "Favorable outcomes = 6 ((1,6),(2,5),(3,4),(4,3),(5,2),(6,1)). Total = 36. Prob = 6/36 = 1/6."
+        },
+        {
+            "title": "Mixtures & Alligations - Ratio (2024)",
+            "desc": "In what ratio should water be mixed with milk costing ₹12 per liter to get a mixture worth ₹8 per liter?",
+            "opts": ["1:2", "2:3", "1:3", "3:4"],
+            "correct": 0,
+            "explanation": "Using alligation ratio: (12-8) : (8-0) = 4 : 8 = 1 : 2."
+        },
+        {
+            "title": "Average - Excluded Number (2024)",
+            "desc": "The average of 5 numbers is 25. If one number is excluded, the average becomes 23. Find the excluded number.",
+            "opts": ["30", "33", "35", "28"],
+            "correct": 1,
+            "explanation": "Sum of 5 = 125. Sum of 4 = 92. Excluded number = 125 - 92 = 33."
+        },
+        {
+            "title": "Ages - Intervals (2024)",
+            "desc": "The sum of ages of 5 children born at intervals of 3 years is 50 years. Find the age of the youngest child.",
+            "opts": ["3 years", "4 years", "5 years", "6 years"],
+            "correct": 1,
+            "explanation": "Sum = x + (x+3) + (x+6) + (x+9) + (x+12) = 5x + 30 = 50 => x = 4 years."
+        },
+        {
+            "title": "Partnership - Capital Withdrawal (2024)",
+            "desc": "A and B invest ₹5,000 and ₹7,000. After 6 months A withdraws ₹2,000. If total yearly profit is ₹4,500, find B's share.",
+            "opts": ["₹2,400.00", "₹2,863.64", "₹3,100.50", "₹1,950.00"],
+            "correct": 1,
+            "explanation": "A ratio = 5000*6 + 3000*6 = 48,000. B ratio = 7000*12 = 84,000. Ratio = 4:7. B share = 7/11 * 4500 = ₹2,863.64."
+        },
+        {
+            "title": "Boats & Streams - Downstream (2024)",
+            "desc": "A man can row 8 km/hr in still water. Speed of stream is 2 km/hr. Find time taken to row 30 km downstream.",
+            "opts": ["2.5 hours", "3 hours", "4 hours", "5 hours"],
+            "correct": 1,
+            "explanation": "Downstream speed = 8 + 2 = 10 km/hr. Time = 30 / 10 = 3 hours."
+        },
+        {
+            "title": "Train Speed Problem (2024)",
+            "desc": "A train travels 360 km at a uniform speed. If speed had been 5 km/h faster, it would take 48 mins less. What is the speed?",
+            "opts": ["40 km/h", "45 km/h", "50 km/h", "55 km/h"],
+            "correct": 1,
+            "explanation": "Equation: 360/x - 360/(x+5) = 48/60 = 4/5. Solving quadratic yields x = 45 km/h."
+        },
+        {
+            "title": "Father and Son Ages (2024)",
+            "desc": "Sum of ages of father and son is 60 years. Father's age is four times that of his son. What are their current ages?",
+            "opts": ["Son: 10, Father: 50", "Son: 12, Father: 48", "Son: 15, Father: 45", "Son: 14, Father: 46"],
+            "correct": 1,
+            "explanation": "x + 4x = 60 => 5x = 60 => x = 12. Son = 12, Father = 48."
+        },
+        {
+            "title": "Time & Work - Worker Rate (2024)",
+            "desc": "If 5 workers complete a task in 20 days, how many days will 8 workers take for the same task?",
+            "opts": ["10 days", "12.5 days", "15 days", "16 days"],
+            "correct": 1,
+            "explanation": "Work = 5 × 20 = 100 worker-days. Days for 8 workers = 100 / 8 = 12.5 days."
+        },
+        {
+            "title": "Mixture Problem - Water Percentage (2024)",
+            "desc": "12L mixture (20% A) is mixed with 10L mixture (30% A). What is the percentage of water in new mixture?",
+            "opts": ["70.5%", "75.45%", "80.2%", "68.4%"],
+            "correct": 1,
+            "explanation": "Water in 1st = 9.6L. Water in 2nd = 7L. Total water = 16.6L out of 22L = (16.6/22)*100 = 75.45%."
+        },
+        {
+            "title": "Two Trains - Same Direction Passing (2024)",
+            "desc": "Two trains move in same direction at 50 kmph and 32 kmph. Slower train passenger sees faster train pass in 15s. Find faster train length.",
+            "opts": ["60 meters", "75 meters", "90 meters", "100 meters"],
+            "correct": 1,
+            "explanation": "Relative speed = 50 - 32 = 18 kmph = 5 m/s. Length = 5 m/s × 15s = 75 meters."
+        },
+        {
+            "title": "Ratio Algebraic Expression (2024)",
+            "desc": "Find (7x + 4y) / (x - 2y) if x / 2y = 3 / 2.",
+            "opts": ["20", "25", "30", "15"],
+            "correct": 1,
+            "explanation": "x/2y = 3/2 => x = 3y. Substitute: (21y + 4y) / (3y - 2y) = 25y / y = 25."
+        },
+
+        # 2024 Logical Reasoning Questions
+        {
+            "title": "Number Series - Double Plus One (2024)",
+            "desc": "Find the next number: 2, 5, 11, 23, 47, ?",
+            "opts": ["90", "95", "96", "100"],
+            "correct": 1,
+            "explanation": "Pattern: previous × 2 + 1. Next = 47 × 2 + 1 = 95."
+        },
+        {
+            "title": "Number Series - Odd Differences (2024)",
+            "desc": "Find the next number: 3, 8, 15, 24, 35, ?",
+            "opts": ["42", "48", "50", "52"],
+            "correct": 1,
+            "explanation": "Differences are 5, 7, 9, 11, 13. Next = 35 + 13 = 48."
+        },
+        {
+            "title": "Letter Series - Plus 3 (2024)",
+            "desc": "Find the next letter: A, D, G, J, ?",
+            "opts": ["L", "M", "N", "O"],
+            "correct": 1,
+            "explanation": "Pattern: +3 letters. A(+3)->D(+3)->G(+3)->J(+3)->M."
+        },
+        {
+            "title": "Coding-Decoding - Plus 2 Shift (2024)",
+            "desc": "If 'TECHNOLOGY' is coded as 'VGEPQMQNA', how is 'COMPUTER' coded?",
+            "opts": ["DQNRVTFU", "EQORWVGT", "EPNQVUFS", "FQPSXWHU"],
+            "correct": 1,
+            "explanation": "Each letter shifted by +2. COMPUTER -> EQORWVGT."
+        },
+        {
+            "title": "Syllogism - Four Conclusions (2024)",
+            "desc": "Statements: 1. All green are blue, 2. All blue are white. Which follow?",
+            "opts": ["Only I follows", "Only I, II, and III follow", "All follow", "None follows"],
+            "correct": 1,
+            "explanation": "All green are blue -> Some blue are green. Combined: All green are white -> Some white/green follow. All white are blue does not follow."
+        },
+        {
+            "title": "Blood Relations - Mother Relation (2024)",
+            "desc": "Pointing to a man, a woman said, 'His mother is the only daughter of my mother.' How is the woman related to the man?",
+            "opts": ["Sister", "Mother", "Aunt", "Grandmother"],
+            "correct": 1,
+            "explanation": "Only daughter of woman's mother = woman herself. So she is his mother."
+        },
+        {
+            "title": "Direction Sense - Northeast (2024)",
+            "desc": "A person walks 5 km north, then 3 km east, then 2 km south. Distance and direction from starting point?",
+            "opts": ["5 km, North", "3√2 km, Northeast", "6 km, East", "4 km, Southeast"],
+            "correct": 1,
+            "explanation": "Net North = 3 km, Net East = 3 km. Distance = √(9+9) = 3√2 km Northeast."
+        },
+        {
+            "title": "Seating Arrangement - Row Middle (2024)",
+            "desc": "Five friends A, B, C, D, E sit in a row. A is not at end. B is right of A. C is at one end. D is between C and E. Who is in the middle?",
+            "opts": ["A", "E", "D", "B"],
+            "correct": 1,
+            "explanation": "Arrangement: A-B-E-D-C. Middle position is E."
+        },
+        {
+            "title": "Ordering & Ranking - Bottom Rank (2024)",
+            "desc": "In a class of 40 students, Ravi ranks 15th from the top. What is his rank from the bottom?",
+            "opts": ["25th", "26th", "27th", "24th"],
+            "correct": 1,
+            "explanation": "Rank from bottom = 40 - 15 + 1 = 26th."
+        },
+        {
+            "title": "Statement & Conclusions - Flowers (2024)",
+            "desc": "Statement: All roses are flowers. Some flowers are red. Conclusions: I) Some roses are red, II) All red things are flowers.",
+            "opts": ["Only I follows", "Neither I nor II follows", "Only II follows", "Both follow"],
+            "correct": 1,
+            "explanation": "Neither conclusion necessarily follows from the given statements."
+        },
+        {
+            "title": "Syllogism - Cats and Dogs Validity (2024)",
+            "desc": "All cats are animals. Some animals are dogs. Therefore, some cats are dogs. Is this conclusion valid?",
+            "opts": ["Valid", "Invalid conclusion", "Partially valid", "Cannot say"],
+            "correct": 1,
+            "explanation": "No direct link between cats and dogs is provided, so the conclusion is invalid."
+        },
+        {
+            "title": "Blood Relations - Girl Photograph (2024)",
+            "desc": "Pointing to a photograph, a man says, 'She is the daughter of my grandfather's only son.' How is the girl related to the man?",
+            "opts": ["Mother", "Sister", "Daughter", "Cousin"],
+            "correct": 1,
+            "explanation": "Grandfather's only son = father. Father's daughter = sister."
+        },
+        {
+            "title": "Number Series - Product Pattern (2024)",
+            "desc": "Find missing number: 2, 6, 12, 20, ?",
+            "opts": ["28", "30", "32", "36"],
+            "correct": 1,
+            "explanation": "n(n+1): 1*2=2, 2*3=6, 3*4=12, 4*5=20, 5*6=30."
+        },
+        {
+            "title": "Coding-Decoding - Reverse Word (2024)",
+            "desc": "If 'APPLE' is written as 'ELPPA', how is 'ORANGE' written?",
+            "opts": ["EGNARO", "EGNORA", "OEGARN", "RANOEG"],
+            "correct": 0,
+            "explanation": "Reverses the letters: ORANGE -> EGNARO."
+        },
+
+        # 2024 Verbal Ability Questions
+        {
+            "title": "Reading Comprehension - AI Concerns (2024)",
+            "desc": "Passage: 'Artificial Intelligence has revolutionized industries... However, concerns about job displacement and ethical implications remain significant challenges.' What are the main concerns?",
+            "opts": ["High costs", "Job displacement and ethical implications", "Lack of memory", "Manual data entry"],
+            "correct": 1,
+            "explanation": "The passage highlights job displacement and ethical implications."
+        },
+        {
+            "title": "Grammar - Neither Nor Rule (2024)",
+            "desc": "Choose the correct sentence:",
+            "opts": ["a) Neither the students nor the teacher were present", "b) Neither the students nor the teacher was present", "c) Neither the students or the teacher was present", "d) Neither student nor teachers was present"],
+            "correct": 1,
+            "explanation": "With 'neither...nor', verb agrees with closer subject ('teacher' is singular => 'was')."
+        },
+        {
+            "title": "Vocabulary - Synonyms: ABUNDANT (2024)",
+            "desc": "Find the synonym of 'ABUNDANT':",
+            "opts": ["a) Scarce", "b) Plentiful", "c) Limited", "d) Rare"],
+            "correct": 1,
+            "explanation": "Abundant means existing in large quantities ('Plentiful')."
+        },
+        {
+            "title": "Vocabulary - Antonyms: TRANSPARENT (2024)",
+            "desc": "Find the antonym of 'TRANSPARENT':",
+            "opts": ["a) Clear", "b) Opaque", "c) Visible", "d) Bright"],
+            "correct": 1,
+            "explanation": "Transparent means see-through, so 'Opaque' is the antonym."
+        },
+        {
+            "title": "Sentence Correction - Data Subject (2024)",
+            "desc": "Choose the correct sentence:",
+            "opts": ["a) The data are incorrect", "b) The data is incorrect", "c) The datas are incorrect", "d) Data were wrong"],
+            "correct": 1,
+            "explanation": "'The data is incorrect' is the standard modern usage."
+        },
+        {
+            "title": "Vocabulary - Synonyms: EPHEMERAL (2024)",
+            "desc": "Choose the synonym for 'Ephemeral':",
+            "opts": ["a) Eternal", "b) Transient", "c) Permanent", "d) Perpetual"],
+            "correct": 1,
+            "explanation": "Ephemeral means short-lived or temporary ('Transient')."
+        },
+        {
+            "title": "Reading Comprehension - Industrial Revolution (2024)",
+            "desc": "Passage: 'The industrial revolution led to a significant increase in urban populations as people moved to cities in search of work.' What was a major consequence?",
+            "opts": ["Rural population growth", "Significant increase in urban populations as people moved to cities for work", "Decrease in manufacturing", "Decline of cities"],
+            "correct": 1,
+            "explanation": "Urban population grew significantly as people migrated for jobs."
         }
     ]
 
