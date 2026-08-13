@@ -59,6 +59,12 @@
           <div class="mcq-options-container" id="mcq-options-wrapper">
             <!-- Rendered by js/exam.js -->
           </div>
+
+          <!-- Solution Explanation Box (Shown during test review) -->
+          <div id="mcq-explanation-box" style="display:none;margin-top:18px;padding:16px;background:rgba(99, 102, 241, 0.1);border:1px solid var(--exam-primary);border-radius:10px;">
+            <div style="font-weight:700;color:#a5b4fc;margin-bottom:6px">💡 Solution &amp; Explanation:</div>
+            <div id="mcq-explanation-text" style="font-size:14px;color:var(--exam-text);line-height:1.5"></div>
+          </div>
         </div>
 
         <div class="question-actions">
@@ -149,26 +155,37 @@
       <p style="color:var(--exam-muted);font-size:14px;">Your placement assessment test has been submitted and evaluated successfully.</p>
 
       <div class="result-score-circle" id="score-percentage-circle">
-        85%
-        <span>Score</span>
+        0
+        <span>Points</span>
       </div>
 
       <div style="background:var(--exam-card);border-radius:10px;padding:16px;margin:20px 0;text-align:left;font-size:14px;display:flex;flex-direction:column;gap:8px;">
         <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--exam-muted);">MCQs Score:</span>
-          <strong id="res-mcq-score" style="color:var(--exam-green)">0 / 30</strong>
+          <span style="color:var(--exam-muted);">Total Score (+3 / 0 / -1):</span>
+          <strong id="res-total-marks" style="color:#a5b4fc">0 / 90 Points</strong>
         </div>
         <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--exam-muted);">Coding Questions Submitted:</span>
+          <span style="color:var(--exam-muted);">Correct Answers (+3):</span>
+          <strong id="res-correct-count" style="color:var(--exam-green)">0</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--exam-muted);">Wrong Answers (-1):</span>
+          <strong id="res-wrong-count" style="color:#ef4444">0</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--exam-muted);">Unattempted (0):</span>
+          <strong id="res-unattempted-count" style="color:var(--exam-muted)">0</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--exam-muted);">Coding Submitted:</span>
           <strong id="res-coding-score" style="color:var(--exam-accent)">0 / 3</strong>
-        </div>
-        <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--exam-muted);">Placement Status:</span>
-          <strong id="res-status" style="color:#6366f1">PASSED</strong>
         </div>
       </div>
 
-      <button class="btn-exam btn-exam-primary" style="width:100%" onclick="window.location.href='index.html'">Return to Dashboard</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-exam btn-exam-purple" style="flex:1" id="btn-review-answers">🔍 Review Answers &amp; Solutions</button>
+        <button class="btn-exam btn-exam-secondary" style="flex:1" onclick="window.location.href='index.html'">Dashboard</button>
+      </div>
     </div>
   </div>
 

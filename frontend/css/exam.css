@@ -185,15 +185,16 @@ body.exam-body {
   background: rgba(99, 102, 241, 0.08);
 }
 
-.mcq-option-label.selected {
-  border-color: var(--exam-accent);
-  background: rgba(6, 182, 212, 0.15);
+.mcq-option-label.correct-choice {
+  border-color: var(--exam-green) !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #a7f3d0 !important;
 }
 
-.mcq-option-radio {
-  accent-color: var(--exam-accent);
-  width: 18px;
-  height: 18px;
+.mcq-option-label.wrong-choice {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
 }
 
 /* Coding Workspace in Exam */

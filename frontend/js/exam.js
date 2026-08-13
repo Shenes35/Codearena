@@ -160,6 +160,9 @@ function switchTab(tab) {
   else renderCurrentCoding();
 }
 
+let isReviewMode = false;
+let examResultDetails = null;
+
 function renderCurrentMcq() {
   if (!examData.mcqs.length) return;
   const q = examData.mcqs[userState.currentMcqIdx];
@@ -171,34 +174,71 @@ function renderCurrentMcq() {
   const wrapper = document.getElementById("mcq-options-wrapper");
   wrapper.innerHTML = "";
 
-    const savedAns = userState.mcqAnswers[q.id];
-    const selectedOpt = (typeof savedAns === "object") ? savedAns.selected : savedAns;
+  const savedAns = userState.mcqAnswers[q.id];
+  const selectedOpt = (typeof savedAns === "object") ? savedAns.selected : savedAns;
+  const correctIdx = (q.active_correct_index !== undefined) ? q.active_correct_index : (q.correct_option || 0);
 
-    (q.options || []).forEach((optText, idx) => {
-      const label = document.createElement("label");
-      label.className = `mcq-option-label ${selectedOpt === idx ? "selected" : ""}`;
-      
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `opt_${q.id}`;
-      radio.className = "mcq-option-radio";
-      radio.checked = selectedOpt === idx;
+  (q.options || []).forEach((optText, idx) => {
+    const label = document.createElement("label");
+    let choiceClass = "";
+
+    if (isReviewMode) {
+      if (idx === correctIdx) {
+        choiceClass = "correct-choice";
+      } else if (selectedOpt === idx && selectedOpt !== correctIdx) {
+        choiceClass = "wrong-choice";
+      }
+    } else if (selectedOpt === idx) {
+      choiceClass = "selected";
+    }
+
+    label.className = `mcq-option-label ${choiceClass}`;
+    
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = `opt_${q.id}`;
+    radio.className = "mcq-option-radio";
+    radio.checked = selectedOpt === idx;
+    radio.disabled = isReviewMode;
+
+    if (!isReviewMode) {
       radio.addEventListener("change", () => {
         userState.mcqAnswers[q.id] = {
           selected: idx,
-          correct_idx: (q.active_correct_index !== undefined) ? q.active_correct_index : (q.correct_option || 0)
+          correct_idx: correctIdx
         };
         renderCurrentMcq();
         renderMcqPalette();
       });
+    }
 
-      const span = document.createElement("span");
-      span.textContent = optText;
+    const span = document.createElement("span");
+    span.textContent = optText;
 
-      label.appendChild(radio);
-      label.appendChild(span);
+    if (isReviewMode) {
+      if (idx === correctIdx) {
+        span.innerHTML = `${optText} <strong style="color:var(--exam-green);margin-left:8px">✓ (Correct Answer)</strong>`;
+      } else if (selectedOpt === idx) {
+        span.innerHTML = `${optText} <strong style="color:#ef4444;margin-left:8px">✗ (Your Answer - Wrong)</strong>`;
+      }
+    }
+
+    label.appendChild(radio);
+    label.appendChild(span);
     wrapper.appendChild(label);
   });
+
+  // Explanation box during review
+  const expBox = document.getElementById("mcq-explanation-box");
+  const expText = document.getElementById("mcq-explanation-text");
+
+  if (isReviewMode && expBox && expText) {
+    expBox.style.display = "block";
+    const detail = (examResultDetails?.mcq_details || []).find(d => d.id === q.id);
+    expText.textContent = detail?.explanation || q.description || "The correct choice is indicated above.";
+  } else if (expBox) {
+    expBox.style.display = "none";
+  }
 }
 
 function renderCurrentCoding() {
@@ -213,10 +253,11 @@ function renderCurrentCoding() {
 
   const editor = document.getElementById("coding-editor-input");
   editor.value = userState.codingSolutions[q.id] || "";
+  if (isReviewMode) editor.readOnly = true;
 }
 
 function saveCodingCurrentSolution() {
-  if (!examData.coding.length) return;
+  if (isReviewMode || !examData.coding.length) return;
   const q = examData.coding[userState.currentCodingIdx];
   const code = document.getElementById("coding-editor-input").value;
   if (code.trim()) {
@@ -233,12 +274,24 @@ function renderMcqPalette() {
     btn.className = "palette-btn";
     btn.textContent = idx + 1;
 
-    const isAnswered = userState.mcqAnswers[q.id] !== undefined;
+    const savedAns = userState.mcqAnswers[q.id];
+    const selectedOpt = (typeof savedAns === "object") ? savedAns.selected : savedAns;
+    const isAnswered = selectedOpt !== undefined && selectedOpt !== -1;
     const isMarked = userState.mcqMarked[q.id];
     const isCurrent = userState.activeTab === "mcq" && userState.currentMcqIdx === idx;
 
-    if (isAnswered) btn.classList.add("answered");
-    if (isMarked) btn.classList.add("review");
+    if (isReviewMode && examResultDetails) {
+      const detail = (examResultDetails.mcq_details || []).find(d => d.id === q.id);
+      if (detail) {
+        if (detail.status === "correct") btn.style.background = "var(--exam-green)";
+        else if (detail.status === "wrong") btn.style.background = "#ef4444";
+        else btn.style.background = "var(--exam-card)";
+      }
+    } else {
+      if (isAnswered) btn.classList.add("answered");
+      if (isMarked) btn.classList.add("review");
+    }
+
     if (isCurrent) btn.classList.add("current");
 
     btn.addEventListener("click", () => {
@@ -281,6 +334,11 @@ function startTimer() {
   const display = document.getElementById("timer-display");
   
   userState.timerInterval = setInterval(() => {
+    if (isReviewMode) {
+      display.textContent = "REVIEW MODE";
+      clearInterval(userState.timerInterval);
+      return;
+    }
     userState.timeRemainingSeconds--;
     if (userState.timeRemainingSeconds <= 0) {
       clearInterval(userState.timerInterval);
@@ -296,7 +354,7 @@ function startTimer() {
 
 function setupProctoring() {
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
+    if (document.hidden && !isReviewMode) {
       console.warn("⚠️ Tab switch detected during placement exam.");
     }
   });
@@ -318,32 +376,79 @@ async function submitExam() {
       body: JSON.stringify(payload)
     });
     const result = await res.json();
+    examResultDetails = result;
     showResultModal(result);
   } catch (e) {
     console.error("Submission error:", e);
-    showResultModal({
-      mcq_correct: Object.keys(userState.mcqAnswers).length,
-      mcq_total: examData.mcqs.length || 30,
-      mcq_percentage: Math.round((Object.keys(userState.mcqAnswers).length / 30) * 100),
-      coding_submitted: Object.keys(userState.codingSolutions).length
+    // Fallback scoring logic: +3 for correct, -1 for wrong, 0 for unattempted
+    let correct = 0;
+    let wrong = 0;
+    let unattempted = 0;
+    let score = 0;
+
+    examData.mcqs.forEach(q => {
+      const ansInfo = userState.mcqAnswers[q.id];
+      const selected = (typeof ansInfo === "object") ? ansInfo.selected : ansInfo;
+      const correctIdx = (q.active_correct_index !== undefined) ? q.active_correct_index : (q.correct_option || 0);
+
+      if (selected === undefined || selected === -1) {
+        unattempted++;
+      } else if (selected === correctIdx) {
+        correct++;
+        score += 3;
+      } else {
+        wrong++;
+        score -= 1;
+      }
     });
+
+    examResultDetails = {
+      score,
+      max_possible_score: examData.mcqs.length * 3,
+      mcq_correct: correct,
+      mcq_wrong: wrong,
+      mcq_unattempted: unattempted,
+      mcq_total: examData.mcqs.length,
+      mcq_details: examData.mcqs.map(q => ({
+        id: q.id,
+        explanation: q.description
+      })),
+      coding_submitted: Object.keys(userState.codingSolutions).length
+    };
+
+    showResultModal(examResultDetails);
   }
 }
 
 function showResultModal(res) {
   document.getElementById("result-modal").style.display = "flex";
   
-  const scorePercent = res.mcq_percentage || 0;
-  document.getElementById("score-percentage-circle").innerHTML = `${scorePercent}%<span>Score</span>`;
-  document.getElementById("res-mcq-score").textContent = `${res.mcq_correct || 0} / ${res.mcq_total || 30}`;
+  const score = res.score ?? 0;
+  const maxScore = res.max_possible_score ?? (res.mcq_total * 3);
+
+  document.getElementById("score-percentage-circle").innerHTML = `${score}<span>Points</span>`;
+  document.getElementById("res-total-marks").textContent = `${score} / ${maxScore} Points`;
+  document.getElementById("res-correct-count").textContent = `${res.mcq_correct || 0} (+${(res.mcq_correct || 0) * 3} pts)`;
+  document.getElementById("res-wrong-count").textContent = `${res.mcq_wrong || 0} (-${res.mcq_wrong || 0} pts)`;
+  document.getElementById("res-unattempted-count").textContent = `${res.mcq_unattempted || 0} (0 pts)`;
   document.getElementById("res-coding-score").textContent = `${res.coding_submitted || 0} / ${examData.coding.length || 3}`;
 
-  const statusElem = document.getElementById("res-status");
-  if (scorePercent >= 60) {
-    statusElem.textContent = "QUALIFIED ✅";
-    statusElem.style.color = "#10b981";
-  } else {
-    statusElem.textContent = "NEEDS IMPROVEMENT";
-    statusElem.style.color = "#ef4444";
-  }
+  document.getElementById("btn-review-answers").onclick = () => {
+    document.getElementById("result-modal").style.display = "none";
+    enterReviewMode();
+  };
+}
+
+function enterReviewMode() {
+  isReviewMode = true;
+  document.getElementById("timer-display").textContent = "REVIEW MODE";
+  
+  // Disable exam action buttons
+  document.getElementById("btn-mcq-clear").style.display = "none";
+  document.getElementById("btn-mcq-review").style.display = "none";
+  document.getElementById("btn-submit-exam").style.display = "none";
+
+  renderCurrentMcq();
+  renderMcqPalette();
+  renderCodingPalette();
 }

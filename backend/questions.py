@@ -257,6 +257,7 @@ def get_placement_exam() -> dict:
 def evaluate_placement_exam(submission: dict) -> dict:
     """
     Evaluate candidate placement exam submission.
+    Scoring system: +3 for Correct Answer, 0 for Unattempted, -1 for Wrong Answer.
     """
     col = _get_col()
     mcq_answers = submission.get("mcq_answers", {})
@@ -264,10 +265,16 @@ def evaluate_placement_exam(submission: dict) -> dict:
 
     # Evaluate MCQs
     mcq_correct_count = 0
+    mcq_wrong_count = 0
+    mcq_unattempted_count = 0
+    total_score = 0
     mcq_results = []
+    
     all_mcqs = {m["id"]: m for m in col.find({"type": "mcq"}, {"_id": 0})}
 
     for qid, q_data in all_mcqs.items():
+        explanation = q_data.get("explanation") or q_data.get("description", "")
+        
         if qid in mcq_answers:
             ans_info = mcq_answers[qid]
             if isinstance(ans_info, dict):
@@ -277,27 +284,45 @@ def evaluate_placement_exam(submission: dict) -> dict:
                 user_ans = int(ans_info)
                 correct_ans = int(q_data.get("correct_option", 0))
 
-            is_correct = (user_ans == correct_ans)
-            if is_correct:
+            if user_ans == -1:
+                # Unattempted
+                mcq_unattempted_count += 1
+                score_change = 0
+                status = "unattempted"
+            elif user_ans == correct_ans:
+                # Correct
                 mcq_correct_count += 1
+                score_change = 3
+                status = "correct"
+            else:
+                # Wrong
+                mcq_wrong_count += 1
+                score_change = -1
+                status = "wrong"
+
+            total_score += score_change
             mcq_results.append({
                 "id": qid,
                 "title": q_data.get("title"),
                 "user_answer": user_ans,
                 "correct_answer": correct_ans,
-                "is_correct": is_correct
+                "status": status,
+                "score_change": score_change,
+                "explanation": explanation
             })
 
-    total_mcqs = len(mcq_answers) if len(mcq_answers) > 0 else 30
-    mcq_percentage = (mcq_correct_count / max(total_mcqs, 1)) * 100
+    total_mcqs = len(mcq_results) if len(mcq_results) > 0 else 30
+    max_possible_score = total_mcqs * 3
 
     return {
+        "score": total_score,
+        "max_possible_score": max_possible_score,
         "mcq_correct": mcq_correct_count,
+        "mcq_wrong": mcq_wrong_count,
+        "mcq_unattempted": mcq_unattempted_count,
         "mcq_total": total_mcqs,
-        "mcq_percentage": round(mcq_percentage, 2),
         "mcq_details": mcq_results,
-        "coding_submitted": len(coding_submissions),
-        "total_score_percentage": round(mcq_percentage, 2)
+        "coding_submitted": len(coding_submissions)
     }
 
 
