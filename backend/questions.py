@@ -235,6 +235,15 @@ def get_placement_exam() -> dict:
 
             item["options"] = all_choices
             item["active_correct_index"] = all_choices.index(correct_ans)
+        else:
+            # Standard MCQ: Shuffle options randomly so correct answer isn't always in position 0
+            opts = list(m.get("options", []))
+            orig_correct_idx = m.get("correct_option", 0)
+            if opts and 0 <= orig_correct_idx < len(opts):
+                correct_val = opts[orig_correct_idx]
+                random.shuffle(opts)
+                item["options"] = opts
+                item["active_correct_index"] = opts.index(correct_val)
 
         safe_mcqs.append(item)
 

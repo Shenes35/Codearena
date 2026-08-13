@@ -8,12 +8,20 @@
 const API_BASE = "https://codearena-r5yq.onrender.com";
 
 // ── Utils ──────────────────────────────────────────────────
-// Get display name from Google Sign-In (auth.js) or fallback to "Guest"
+// Get display name/email from Google Sign-In (auth.js) or fallback to "Guest"
 function getUsername() {
   if (window.CA_Auth) {
     const user = CA_Auth.getUser();
-    if (user) return user.name;
+    if (user && user.email) return `${user.name} (${user.email})`;
+    if (user && user.name) return user.name;
   }
+  try {
+    const stored = localStorage.getItem("codearena_user");
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u.email) return `${u.name || 'User'} (${u.email})`;
+    }
+  } catch(e){}
   return "Guest";
 }
 

@@ -364,7 +364,17 @@ async function submitExam() {
   saveCodingCurrentSolution();
   clearInterval(userState.timerInterval);
 
+  let userEmail = "Guest";
+  try {
+    const stored = localStorage.getItem("codearena_user");
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u.email) userEmail = u.email;
+    }
+  } catch(e){}
+
   const payload = {
+    user_email: userEmail,
     mcq_answers: userState.mcqAnswers,
     coding_submissions: userState.codingSolutions
   };
