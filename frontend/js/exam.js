@@ -163,6 +163,34 @@ function switchTab(tab) {
 let isReviewMode = false;
 let examResultDetails = null;
 
+function formatMcqCodeBlocks(text) {
+  if (!text) return "";
+  if (text.includes("```")) return text; // Already formatted with Markdown code block
+
+  // Pattern matching for unformatted single-line code blocks (e.g. int main() { ... })
+  const codeRegex = /(int main\s*\([^)]*\)\s*\{[\s\S]*\}|public class[\s\S]*\}|def func\s*\([^)]*\):[\s\S]*|\bfor\s*\([^)]*\)\s*\{[\s\S]*\}|\bBegin\b[\s\S]*\bEnd\b)/i;
+  
+  if (codeRegex.test(text)) {
+    return text.replace(codeRegex, (match) => {
+      // Format single line statements with proper newlines
+      let formattedCode = match
+        .replace(/;\s*/g, ';\n  ')
+        .replace(/\{\s*/g, '{\n  ')
+        .replace(/\}\s*/g, '\n}\n')
+        .replace(/:\s*/g, ':\n  ')
+        .replace(/\n\s*\n/g, '\n');
+
+      let lang = "c";
+      if (match.includes("class") || match.includes("System.out")) lang = "java";
+      else if (match.includes("def ")) lang = "python";
+      else if (match.includes("Begin")) lang = "text";
+
+      return `\n\n\`\`\`${lang}\n${formattedCode.trim()}\n\`\`\`\n\n`;
+    });
+  }
+  return text;
+}
+
 function renderCurrentMcq() {
   if (!examData.mcqs.length) return;
   const q = examData.mcqs[userState.currentMcqIdx];
@@ -171,11 +199,13 @@ function renderCurrentMcq() {
   document.getElementById("mcq-diff-display").textContent = q.difficulty || "Medium";
   
   const titleElem = document.getElementById("mcq-title-display");
-  const fullText = `${q.title}:\n\n${q.description}`;
+  const rawText = `${q.title}:\n\n${q.description}`;
+  const formattedText = formatMcqCodeBlocks(rawText);
+
   if (typeof marked !== "undefined") {
-    titleElem.innerHTML = marked.parse(fullText);
+    titleElem.innerHTML = marked.parse(formattedText);
   } else {
-    titleElem.textContent = fullText;
+    titleElem.textContent = formattedText;
   }
 
   const wrapper = document.getElementById("mcq-options-wrapper");

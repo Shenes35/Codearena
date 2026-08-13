@@ -150,7 +150,8 @@ def _strip(doc: dict) -> dict:
 def get_all() -> list[dict]:
     """Return all questions (without test case expected outputs or MCQ correct options for security)."""
     col = _get_col()
-    if col.count_documents({"id": {"$regex": "^pmcq_"}}) < 50:
+    mcq_docs = list(col.find({"type": "mcq"}, {"_id": 0}))
+    if len(mcq_docs) < 50 or any("```" not in m.get("description", "") for m in mcq_docs if "Output" in m.get("title", "")):
         col.delete_many({"id": {"$regex": "^pmcq_"}})
         _seed_placement_mcqs(100)
 
@@ -219,7 +220,8 @@ def get_placement_exam() -> dict:
     
     # Fetch MCQs
     mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
-    if len(mcqs) < 50:
+    # Force refresh if old single-line pmcq_ questions exist in database
+    if len(mcqs) < 50 or any("```" not in m.get("description", "") for m in mcqs if "Output" in m.get("title", "")):
         col.delete_many({"id": {"$regex": "^pmcq_"}})
         _seed_placement_mcqs(100)
         mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
