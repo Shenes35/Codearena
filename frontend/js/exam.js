@@ -21,16 +21,37 @@ let userState = {
   timerInterval: null
 };
 
+let testMode = "full"; // "mcq", "coding", or "full"
+
 document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  testMode = urlParams.get("mode") || "full";
   initExam();
 });
 
 async function initExam() {
   setupEventListeners();
   await fetchPlacementQuestions();
+
+  if (testMode === "mcq") {
+    document.getElementById("tab-coding").style.display = "none";
+    document.getElementById("coding-palette-container")?.style.setProperty("display", "none", "important");
+    userState.timeRemainingSeconds = 40 * 60; // 40 mins for MCQ test
+    switchTab("mcq");
+  } else if (testMode === "coding") {
+    document.getElementById("tab-mcq").style.display = "none";
+    document.getElementById("mcq-palette-container")?.style.setProperty("display", "none", "important");
+    userState.timeRemainingSeconds = 45 * 60; // 45 mins for Coding test
+    switchTab("coding");
+  } else {
+    switchTab("mcq");
+  }
+
   renderMcqPalette();
   renderCodingPalette();
-  renderCurrentMcq();
+  if (testMode !== "coding") renderCurrentMcq();
+  else renderCurrentCoding();
+
   startTimer();
   setupProctoring();
 }
@@ -44,7 +65,8 @@ async function fetchPlacementQuestions() {
     examData.mcqs = data.mcq_questions || [];
     examData.coding = data.coding_questions || [];
     examData.durationMinutes = data.duration_minutes || 60;
-    userState.timeRemainingSeconds = examData.durationMinutes * 60;
+
+    if (testMode === "full") userState.timeRemainingSeconds = examData.durationMinutes * 60;
 
     document.getElementById("mcq-badge-count").textContent = `${examData.mcqs.length} Qs`;
     document.getElementById("coding-badge-count").textContent = `${examData.coding.length} Qs`;

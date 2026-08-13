@@ -21,7 +21,9 @@
     </a>
     <div class="navbar-links">
       <a class="nav-link active" href="index.html">Problems</a>
-      <a class="nav-link" href="exam.html" style="font-weight:700;color:var(--accent);display:inline-flex;align-items:center;gap:4px">🎓 Placement Exam</a>
+      <a class="nav-link" href="exam.html?mode=mcq" style="font-weight:700;color:var(--accent)">🔘 MCQ Test (30 Qs)</a>
+      <a class="nav-link" href="exam.html?mode=coding" style="font-weight:700;color:var(--accent)">💻 Coding Test (3 Qs)</a>
+      <a class="nav-link" href="exam.html?mode=full" style="font-weight:700;color:#8b5cf6">🎓 Full Placement Exam</a>
       <a class="nav-link" id="admin-nav-link" href="admin.html" style="display:none">Admin</a>
       <!-- Auth chip — populated by auth.js -->
       <div class="auth-chip" id="auth-chip"></div>
@@ -33,10 +35,12 @@
 
     <!-- Hero -->
     <section class="hero">
-      <h1 class="hero-title">Sharpen Your Coding Skills</h1>
-      <p class="hero-subtitle">Write code, run it against real test cases, and take official Placement Assessment Tests.</p>
-      <div style="margin-top:16px;">
-        <a href="exam.html" class="btn btn-primary" style="padding:12px 24px;font-size:15px;text-decoration:none;display:inline-block">⚡ Start Placement Test (30 MCQs + 3 Coding) →</a>
+      <h1 class="hero-title">Sharpen Your Placement Skills</h1>
+      <p class="hero-subtitle">Choose a standalone test mode or take the full placement assessment.</p>
+      <div style="margin-top:20px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a href="exam.html?mode=mcq" class="btn btn-primary" style="padding:12px 20px;font-size:14px;text-decoration:none;background:#06b6d4;border-color:#06b6d4">🔘 Start 30 MCQ Test →</a>
+        <a href="exam.html?mode=coding" class="btn btn-primary" style="padding:12px 20px;font-size:14px;text-decoration:none;background:#10b981;border-color:#10b981">💻 Start 3 Coding Test →</a>
+        <a href="exam.html?mode=full" class="btn btn-primary" style="padding:12px 20px;font-size:14px;text-decoration:none">🎓 Full Placement Test (MCQ + Coding) →</a>
       </div>
     </section>
 
