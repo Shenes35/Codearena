@@ -112,9 +112,10 @@ SEED_QUESTIONS = [
 
 
 def _seed_if_empty(col):
-    if col.count_documents({}) == 0:
-        col.insert_many(SEED_QUESTIONS)
-        print(f"[questions] Seeded {len(SEED_QUESTIONS)} questions into MongoDB.")
+    if col.count_documents({"type": "mcq"}) < 70:
+        col.delete_many({"id": {"$regex": "^pmcq_"}})
+        _seed_placement_mcqs(100)
+        print("[questions] Seeded all 75+ placement MCQs into MongoDB.")
 
 
 # ── Public API ──────────────────────────────────────────────
@@ -194,7 +195,7 @@ def get_placement_exam() -> dict:
     # Fetch MCQs
     mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
     if len(mcqs) < 70:
-        # Re-seed expanded 2024 and 2025 benchmark placement & technical MCQs
+        # Delete old pmcq_ seeds and force seeding of all 75+ questions
         col.delete_many({"id": {"$regex": "^pmcq_"}})
         _seed_placement_mcqs(100)
         mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
