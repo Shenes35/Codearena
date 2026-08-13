@@ -218,13 +218,10 @@ def get_placement_exam() -> dict:
 
     col = _get_col()
     
-    # Fetch MCQs
+    # Always ensure database has fresh clean placement MCQs
+    col.delete_many({"id": {"$regex": "^pmcq_"}})
+    _seed_placement_mcqs(100)
     mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
-    # Force refresh if old single-line pmcq_ questions exist in database
-    if len(mcqs) < 50 or any("```" not in m.get("description", "") for m in mcqs if "Output" in m.get("title", "")):
-        col.delete_many({"id": {"$regex": "^pmcq_"}})
-        _seed_placement_mcqs(100)
-        mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
 
     # Fetch Coding questions
     coding = list(col.find({"type": {"$ne": "mcq"}}, {"_id": 0}))

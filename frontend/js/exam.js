@@ -166,57 +166,51 @@ let examResultDetails = null;
 function formatMcqCodeBlocks(text) {
   if (!text) return "";
   
-  // Clean backticks formatting issues
+  // Normalize triple backticks formatting:
+  // E.g., ```text Begin ... ``` -> convert into clean line breaks
   let cleanText = text
-    .replace(/```([a-z]*)\s*/gi, "\n```$1\n")
-    .replace(/\s*```/g, "\n```\n");
+    .replace(/```([a-z]*)\s*/gi, "\n\n```$1\n")
+    .replace(/```/g, "\n```\n");
 
-  // If text has code keywords but no code blocks, wrap them into code blocks
-  if (!cleanText.includes("```")) {
-    const codeRegex = /(int main\s*\([^)]*\)[\s\S]*\}|public class[\s\S]*\}|def func[\s\S]*|Set A =[\s\S]*End)/i;
-    if (codeRegex.test(cleanText)) {
-      cleanText = cleanText.replace(codeRegex, (match) => {
-        let lines = match
-          .replace(/;\s*/g, ';\n')
-          .replace(/\{\s*/g, '{\n')
-          .replace(/\}\s*/g, '\n}\n')
-          .split('\n')
-          .map(l => l.trim())
-          .filter(l => l.length > 0)
-          .join('\n');
+  // Fix single line pseudocode / C / Java statements inside code block
+  cleanText = cleanText.replace(/```([a-z]*)\n([\s\S]*?)\n```/gi, (match, lang, code) => {
+    let formattedCode = code
+      .replace(/\s*Set\s+/g, '\nSet ')
+      .replace(/\s*Print\s+/g, '\nPrint ')
+      .replace(/\s*Begin\s+/g, 'Begin\n')
+      .replace(/\s*End\b/g, '\nEnd')
+      .replace(/;\s*/g, ';\n')
+      .replace(/\{\s*/g, '{\n')
+      .replace(/\}\s*/g, '\n}\n')
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0)
+      .join('\n');
 
-        let lang = "c";
-        if (match.includes("class") || match.includes("System.out")) lang = "java";
-        else if (match.includes("def ")) lang = "python";
-        else if (match.includes("Set A")) lang = "text";
-
-        return `\n\n\`\`\`${lang}\n${lines}\n\`\`\`\n\n`;
-      });
-    }
-  }
+    return `\n\n\`\`\`${lang || 'c'}\n${formattedCode}\n\`\`\`\n\n`;
+  });
 
   return cleanText;
 }
 
 function parseMarkdownToHtml(markdownText) {
-  if (typeof marked !== "undefined" && typeof marked.parse === "function") {
-    try {
-      return marked.parse(markdownText);
-    } catch(e) {}
-  }
-  
-  // Custom fallback Markdown parser for headers, code blocks, and bold text
-  let html = markdownText
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  
-  // Convert ```code``` blocks
+  // First convert ```code``` blocks directly into clean HTML <pre><code> tags
+  let html = markdownText;
+
   html = html.replace(/```([a-z]*)\n([\s\S]*?)\n```/gi, (match, lang, code) => {
-    return `<pre><code class="language-${lang}">${code.trim()}</code></pre>`;
+    const escCode = code
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    return `<pre style="background:#0f172a;border:1px solid rgba(99,102,241,0.4);border-left:4px solid #6366f1;border-radius:8px;padding:14px 18px;margin:16px 0;font-family:'Fira Code',monospace;font-size:14px;color:#e2e8f0;line-height:1.5;overflow-x:auto"><code>${escCode}</code></pre>`;
   });
 
-  // Convert ### Headers
-  html = html.replace(/^### (.*$)/gim, '<h4 style="color:var(--exam-accent);margin:12px 0 6px 0">$1</h4>');
-  html = html.replace(/\n\n/g, '<br/><br/>');
+  // Convert headers (### Question) and bold text (**title**)
+  html = html
+    .replace(/^### (.*$)/gim, '<h4 style="color:var(--exam-accent);margin:14px 0 6px 0;font-size:16px">$1</h4>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#fff">$1</strong>')
+    .replace(/\n\n/g, '<br/><br/>');
+
   return html;
 }
 
