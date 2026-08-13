@@ -169,7 +169,14 @@ function renderCurrentMcq() {
 
   document.getElementById("mcq-num-display").textContent = `Question ${userState.currentMcqIdx + 1} of ${examData.mcqs.length}`;
   document.getElementById("mcq-diff-display").textContent = q.difficulty || "Medium";
-  document.getElementById("mcq-title-display").textContent = `${q.title}: ${q.description}`;
+  
+  const titleElem = document.getElementById("mcq-title-display");
+  const fullText = `${q.title}:\n\n${q.description}`;
+  if (typeof marked !== "undefined") {
+    titleElem.innerHTML = marked.parse(fullText);
+  } else {
+    titleElem.textContent = fullText;
+  }
 
   const wrapper = document.getElementById("mcq-options-wrapper");
   wrapper.innerHTML = "";
