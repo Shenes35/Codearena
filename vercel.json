@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "outputDirectory": "frontend",
+  "rewrites": [
+    {
+      "source": "/exam",
+      "destination": "/exam.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/editor",
+      "destination": "/editor.html"
+    },
+    {
+      "source": "/((?!.*\\.).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
