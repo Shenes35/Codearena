@@ -112,10 +112,11 @@ SEED_QUESTIONS = [
 
 
 def _seed_if_empty(col):
-    if col.count_documents({"type": "mcq"}) < 70:
+    # Auto-seed all 75+ benchmark placement questions into MongoDB
+    if col.count_documents({"id": {"$regex": "^pmcq_"}}) < 50:
         col.delete_many({"id": {"$regex": "^pmcq_"}})
         _seed_placement_mcqs(100)
-        print("[questions] Seeded all 75+ placement MCQs into MongoDB.")
+        print(f"[questions] Seeded {col.count_documents({})} total questions into MongoDB.")
 
 
 # ── Public API ──────────────────────────────────────────────
@@ -129,6 +130,10 @@ def _strip(doc: dict) -> dict:
 def get_all() -> list[dict]:
     """Return all questions (without test case expected outputs or MCQ correct options for security)."""
     col = _get_col()
+    if col.count_documents({"id": {"$regex": "^pmcq_"}}) < 50:
+        col.delete_many({"id": {"$regex": "^pmcq_"}})
+        _seed_placement_mcqs(100)
+
     result = []
     for q in col.find({}, {"_id": 0}):
         safe = {k: v for k, v in q.items() if k not in ("test_cases", "correct_option")}
@@ -194,8 +199,7 @@ def get_placement_exam() -> dict:
     
     # Fetch MCQs
     mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
-    if len(mcqs) < 70:
-        # Delete old pmcq_ seeds and force seeding of all 75+ questions
+    if len(mcqs) < 50:
         col.delete_many({"id": {"$regex": "^pmcq_"}})
         _seed_placement_mcqs(100)
         mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
@@ -350,10 +354,14 @@ def evaluate_placement_exam(submission: dict) -> dict:
     }
     scores_col.insert_one(score_entry)
 
-    # Calculate candidate rank relative to all placement test attempts
-    higher_scores = scores_col.count_documents({"score": {"$gt": total_score}})
-    rank = higher_scores + 1
-    total_candidates = scores_col.count_documents({})
+    # Calculate user's rank relative to their own past attempt scores
+    # (Higher score attempt gets Rank #1, 2nd highest gets Rank #2, etc.)
+    user_higher_attempts = scores_col.count_documents({
+        "user_email": user_email,
+        "score": {"$gt": total_score}
+    })
+    rank = user_higher_attempts + 1
+    total_candidates = scores_col.count_documents({"user_email": user_email})
 
     return {
         "score": total_score,
