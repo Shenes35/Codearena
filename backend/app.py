@@ -235,6 +235,22 @@ def submit():
     return jsonify(response), 200
 
 
+# ── Placement Exam Endpoints ──────────────────
+
+@app.get("/questions/placement")
+def get_placement_questions():
+    """Get candidate placement test paper (30 MCQs + 3 Coding questions)."""
+    return jsonify(qs.get_placement_exam())
+
+
+@app.post("/questions/placement/submit")
+def submit_placement_exam():
+    """Submit and evaluate candidate placement test."""
+    data = request.get_json(silent=True) or {}
+    evaluation = qs.evaluate_placement_exam(data)
+    return jsonify(evaluation)
+
+
 # ─────────────────────────────────────────────
 # Entry point
 # ─────────────────────────────────────────────

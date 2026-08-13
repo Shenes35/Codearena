@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Placement Exam Portal — CodeArena</title>
+  <link rel="stylesheet" href="css/exam.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" />
+</head>
+<body class="exam-body">
+
+  <!-- ── Exam Top Navigation Bar ──────────────────────────────────────── -->
+  <header class="exam-navbar">
+    <a href="index.html" class="exam-brand">
+      <span>⚡ CodeArena</span>
+      <span class="exam-badge">Placement Assessment</span>
+    </a>
+    
+    <div class="exam-timer-box" id="timer-box">
+      <span>⏱️ Time Remaining:</span>
+      <span id="timer-display">60:00</span>
+    </div>
+
+    <div>
+      <button class="btn-exam btn-exam-purple" id="btn-submit-exam">Finish &amp; Submit Test</button>
+    </div>
+  </header>
+
+  <!-- ── Main Placement Exam Layout ────────────────────────────────────── -->
+  <main class="exam-container">
+    
+    <!-- Left: Question & Editor Area -->
+    <div class="exam-main-area">
+
+      <!-- Section Switcher Header -->
+      <div class="section-header">
+        <button class="section-tab active" id="tab-mcq">
+          <span>🔘 Section A: MCQs</span>
+          <span class="exam-badge" id="mcq-badge-count">30 Qs</span>
+        </button>
+        <button class="section-tab" id="tab-coding">
+          <span>💻 Section B: Coding</span>
+          <span class="exam-badge" id="coding-badge-count">3 Qs</span>
+        </button>
+      </div>
+
+      <!-- MCQ View Container -->
+      <div class="question-card" id="mcq-container">
+        <div>
+          <div class="question-title-bar">
+            <span class="question-num" id="mcq-num-display">Question 1 of 30</span>
+            <span class="exam-badge" style="background:#374151;" id="mcq-diff-display">Medium</span>
+          </div>
+
+          <div class="question-body" id="mcq-title-display">
+            Loading MCQ question...
+          </div>
+
+          <div class="mcq-options-container" id="mcq-options-wrapper">
+            <!-- Rendered by js/exam.js -->
+          </div>
+        </div>
+
+        <div class="question-actions">
+          <button class="btn-exam btn-exam-secondary" id="btn-mcq-prev">← Previous</button>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-exam btn-exam-secondary" id="btn-mcq-clear">Clear Choice</button>
+            <button class="btn-exam btn-exam-purple" id="btn-mcq-review">Mark for Review</button>
+          </div>
+          <button class="btn-exam btn-exam-primary" id="btn-mcq-next">Save &amp; Next →</button>
+        </div>
+      </div>
+
+      <!-- Coding View Container (Hidden initially) -->
+      <div class="question-card coding-container" id="coding-container" style="display:none;">
+        <div class="question-title-bar">
+          <span class="question-num" id="coding-num-display">Coding Problem 1 of 3</span>
+          <span class="exam-badge" style="background:#10b981;" id="coding-diff-display">Easy</span>
+        </div>
+
+        <div class="question-body">
+          <h3 id="coding-title-display" style="margin-top:0;color:#fff;">Loading Coding Problem...</h3>
+          <p id="coding-desc-display" style="color:var(--exam-muted);"></p>
+
+          <div style="background:var(--exam-card);padding:12px;border-radius:8px;margin-bottom:12px;">
+            <strong style="color:var(--exam-accent);">Input Format:</strong>
+            <div id="coding-input-fmt" style="font-size:13px;color:#d1d5db;margin-top:4px;"></div>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-weight:600;font-size:13px;color:#a5b4fc;display:block;margin-bottom:6px;">Write Solution (Python 3 / C++ / Java / JS):</label>
+          <textarea class="editor-box" id="coding-editor-input" placeholder="# Write your code solution here..."></textarea>
+        </div>
+
+        <div class="question-actions">
+          <button class="btn-exam btn-exam-secondary" id="btn-coding-prev">← Previous Code Q</button>
+          <button class="btn-exam btn-exam-primary" id="btn-coding-next">Next Code Q →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Question Palette Sidebar -->
+    <aside class="exam-sidebar">
+      <div class="sidebar-title">📌 Question Palette</div>
+
+      <div style="font-size:13px;font-weight:600;color:var(--exam-accent);margin-top:4px;">Section A: MCQs (1 to 30)</div>
+      <div class="palette-grid" id="mcq-palette-grid">
+        <!-- Rendered by exam.js -->
+      </div>
+
+      <div style="font-size:13px;font-weight:600;color:var(--exam-accent);margin-top:12px;">Section B: Coding (1 to 3)</div>
+      <div class="palette-grid" id="coding-palette-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <!-- Rendered by exam.js -->
+      </div>
+
+      <hr style="border-color:var(--exam-border);width:100%;margin:10px 0;" />
+
+      <div class="palette-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--exam-green)"></div>
+          <span>Answered</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--exam-purple)"></div>
+          <span>Marked Review</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--exam-card);border:1px solid var(--exam-border)"></div>
+          <span>Unanswered</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="outline:2px solid var(--exam-accent)"></div>
+          <span>Current</span>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ── Exam Result Modal ─────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="result-modal" style="display:none;">
+    <div class="result-card">
+      <h2 style="margin-top:0;color:#fff;">🎉 Placement Exam Completed</h2>
+      <p style="color:var(--exam-muted);font-size:14px;">Your placement assessment test has been submitted and evaluated successfully.</p>
+
+      <div class="result-score-circle" id="score-percentage-circle">
+        85%
+        <span>Score</span>
+      </div>
+
+      <div style="background:var(--exam-card);border-radius:10px;padding:16px;margin:20px 0;text-align:left;font-size:14px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--exam-muted);">MCQs Score:</span>
+          <strong id="res-mcq-score" style="color:var(--exam-green)">0 / 30</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--exam-muted);">Coding Questions Submitted:</span>
+          <strong id="res-coding-score" style="color:var(--exam-accent)">0 / 3</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:var(--exam-muted);">Placement Status:</span>
+          <strong id="res-status" style="color:#6366f1">PASSED</strong>
+        </div>
+      </div>
+
+      <button class="btn-exam btn-exam-primary" style="width:100%" onclick="window.location.href='index.html'">Return to Dashboard</button>
+    </div>
+  </div>
+
+  <script src="js/exam.js"></script>
+</body>
+</html>

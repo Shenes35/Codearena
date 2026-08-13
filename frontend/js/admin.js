@@ -242,7 +242,8 @@ document.getElementById("btn-create-question").addEventListener("click", async (
     return;
   }
 
-  let payload = { title, description, difficulty, time_limit: timeLimit, type };
+  const isPlacement = document.getElementById("q-is-placement")?.checked ?? true;
+  let payload = { title, description, difficulty, time_limit: timeLimit, type, is_placement: isPlacement };
 
   if (type === "mcq") {
     const { options, correctIndex } = collectMcqOptions();

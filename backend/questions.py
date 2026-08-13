@@ -155,6 +155,7 @@ def add(data: dict) -> dict:
         "description":   data["description"],
         "difficulty":    data.get("difficulty", "Medium"),
         "time_limit":    int(data.get("time_limit", 1800)),
+        "is_placement":  bool(data.get("is_placement", True)),
         "created_at":    datetime.now(timezone.utc).isoformat(),
     }
 
@@ -177,3 +178,362 @@ def delete(qid: str) -> bool:
     col = _get_col()
     result = col.delete_one({"id": qid})
     return result.deleted_count > 0
+
+
+def get_placement_exam() -> dict:
+    """
+    Get 30 MCQs and 3 Coding questions for placement exam.
+    If database does not have 30 MCQs or 3 coding questions, auto-generate standard placement questions.
+    """
+    col = _get_col()
+    
+    # Fetch MCQs
+    mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
+    if len(mcqs) < 30:
+        # Seed standard placement MCQs to reach 30 if needed
+        needed = 30 - len(mcqs)
+        _seed_placement_mcqs(needed)
+        mcqs = list(col.find({"type": "mcq"}, {"_id": 0}))
+
+    # Fetch Coding questions
+    coding = list(col.find({"type": {"$ne": "mcq"}}, {"_id": 0}))
+    if len(coding) < 3:
+        needed = 3 - len(coding)
+        _seed_placement_coding(needed)
+        coding = list(col.find({"type": {"$ne": "mcq"}}, {"_id": 0}))
+
+    selected_mcqs = mcqs[:30]
+    selected_coding = coding[:3]
+
+    # Prepare client-safe payload
+    safe_mcqs = []
+    for m in selected_mcqs:
+        item = {k: v for k, v in m.items() if k != "correct_option"}
+        safe_mcqs.append(item)
+
+    safe_coding = []
+    for c in selected_coding:
+        item = {k: v for k, v in c.items() if k != "test_cases"}
+        item["test_case_count"] = len(c.get("test_cases", []))
+        item["examples"] = c.get("examples", [])
+        safe_coding.append(item)
+
+    return {
+        "mcq_questions": safe_mcqs,
+        "coding_questions": safe_coding,
+        "total_mcqs": len(safe_mcqs),
+        "total_coding": len(safe_coding),
+        "duration_minutes": 60
+    }
+
+
+def evaluate_placement_exam(submission: dict) -> dict:
+    """
+    Evaluate candidate placement exam submission.
+    submission format:
+    {
+      "mcq_answers": {"q_id": selected_option_index, ...},
+      "coding_submissions": {"q_id": {"code": "...", "language": "python"}, ...}
+    }
+    """
+    col = _get_col()
+    mcq_answers = submission.get("mcq_answers", {})
+    coding_submissions = submission.get("coding_submissions", {})
+
+    # Evaluate MCQs
+    mcq_correct_count = 0
+    mcq_results = []
+    all_mcqs = {m["id"]: m for m in col.find({"type": "mcq"}, {"_id": 0})}
+
+    for qid, q_data in all_mcqs.items():
+        if qid in mcq_answers:
+            user_ans = int(mcq_answers[qid])
+            correct_ans = int(q_data.get("correct_option", 0))
+            is_correct = (user_ans == correct_ans)
+            if is_correct:
+                mcq_correct_count += 1
+            mcq_results.append({
+                "id": qid,
+                "title": q_data.get("title"),
+                "user_answer": user_ans,
+                "correct_answer": correct_ans,
+                "is_correct": is_correct
+            })
+
+    total_mcqs = len(all_mcqs) if len(all_mcqs) > 0 else 30
+    mcq_percentage = (mcq_correct_count / max(total_mcqs, 1)) * 100
+
+    return {
+        "mcq_correct": mcq_correct_count,
+        "mcq_total": total_mcqs,
+        "mcq_percentage": round(mcq_percentage, 2),
+        "mcq_details": mcq_results,
+        "coding_submitted": len(coding_submissions),
+        "total_score_percentage": round(mcq_percentage, 2)
+    }
+
+
+def _seed_placement_mcqs(count: int):
+    """Seed benchmark placement MCQs with user-provided 2025 Quantitative, Logical, and Verbal questions."""
+    col = _get_col()
+    
+    # 30 MCQ Questions set exactly as requested
+    user_mcqs = [
+        # Quantitative Aptitude (18 questions)
+        {
+            "title": "Percentage Problem (2025)",
+            "desc": "The price of a product increased by 20%. By what percentage should consumption be reduced to keep expenditure same?",
+            "opts": ["16.67%", "20%", "15%", "18.5%"],
+            "correct": 0
+        },
+        {
+            "title": "Mixture Problem (2025)",
+            "desc": "A mixture contains milk and water in ratio 3:2. If 10 liters of water is added, ratio becomes 2:3. Find initial quantity of mixture.",
+            "opts": ["15 liters", "20 liters", "25 liters", "30 liters"],
+            "correct": 1
+        },
+        {
+            "title": "Profit & Loss - Successive Discounts (2025)",
+            "desc": "A shopkeeper gives two successive discounts of 10% and 20% on an item. What is the effective discount percentage?",
+            "opts": ["30%", "25%", "28%", "22%"],
+            "correct": 2
+        },
+        {
+            "title": "Time & Work - Efficiency (2025)",
+            "desc": "A is twice as efficient as B. Together they complete a work in 12 days. In how many days will A alone complete it?",
+            "opts": ["24 days", "18 days", "16 days", "36 days"],
+            "correct": 1
+        },
+        {
+            "title": "Simple Interest - Rate Calculation (2025)",
+            "desc": "A sum of ₹8,000 amounts to ₹9,600 in 4 years at simple interest. Find the rate of interest per annum.",
+            "opts": ["4%", "5%", "6%", "7.5%"],
+            "correct": 1
+        },
+        {
+            "title": "Compound Interest - Half Yearly (2025)",
+            "desc": "Find compound interest on ₹5,000 for 1 year at 10% per annum, compounded half-yearly.",
+            "opts": ["₹500", "₹525", "₹512.50", "₹550"],
+            "correct": 2
+        },
+        {
+            "title": "Speed & Distance - Relative Speed (2025)",
+            "desc": "Two trains of lengths 100m and 150m are running in the same direction at speeds of 50 km/hr and 40 km/hr respectively. Find time taken by faster train to overtake slower train.",
+            "opts": ["60 seconds", "90 seconds", "75 seconds", "120 seconds"],
+            "correct": 1
+        },
+        {
+            "title": "Speed & Distance - Average Speed (2025)",
+            "desc": "A person travels first half of distance at 40 km/hr and second half at 60 km/hr. Find average speed.",
+            "opts": ["50 km/hr", "48 km/hr", "52 km/hr", "45 km/hr"],
+            "correct": 1
+        },
+        {
+            "title": "Permutations - Arrangements (2025)",
+            "desc": "In how many ways can 5 people be arranged in a row if two particular people must sit together?",
+            "opts": ["120 ways", "24 ways", "48 ways", "60 ways"],
+            "correct": 2
+        },
+        {
+            "title": "Combinations - Selection (2025)",
+            "desc": "In how many ways can 3 students be selected from a group of 8 students?",
+            "opts": ["56 ways", "336 ways", "24 ways", "112 ways"],
+            "correct": 0
+        },
+        {
+            "title": "Pipes & Cisterns - Multiple Pipes (2025)",
+            "desc": "Three pipes A, B, C can fill a tank in 12, 15, and 20 hours respectively. If all three are opened together, how long will it take to fill the tank?",
+            "opts": ["4 hours", "5 hours", "6 hours", "8 hours"],
+            "correct": 1
+        },
+        {
+            "title": "Probability - Cards (2025)",
+            "desc": "Two cards are drawn from a pack of 52 cards. What is the probability that both are aces?",
+            "opts": ["1/221", "1/169", "1/13", "4/663"],
+            "correct": 0
+        },
+        {
+            "title": "Ratio & Proportion - Three Quantities (2025)",
+            "desc": "If A:B = 2:3 and B:C = 4:5, find A:B:C.",
+            "opts": ["2:3:5", "8:12:15", "6:12:15", "8:10:15"],
+            "correct": 1
+        },
+        {
+            "title": "Percentage - Successive Changes (2025)",
+            "desc": "A number is first increased by 25% and then decreased by 20%. Find the net percentage change.",
+            "opts": ["5% increase", "5% decrease", "0% (no change)", "10% increase"],
+            "correct": 2
+        },
+        {
+            "title": "Data Interpretation (2025)",
+            "desc": "Product B sold 40,000 units. Product A sold 25% more than Product B. Find Product A's sales.",
+            "opts": ["45,000 units", "50,000 units", "55,000 units", "60,000 units"],
+            "correct": 1
+        },
+        {
+            "title": "Ages Problem - Sum of Ages (2025)",
+            "desc": "The sum of the ages of A and B is 60 years, and A is twice as old as B. What are their ages?",
+            "opts": ["A: 30, B: 30", "A: 40, B: 20", "A: 45, B: 15", "A: 36, B: 24"],
+            "correct": 1
+        },
+        {
+            "title": "Number Series - Consecutive Even Differences (2025)",
+            "desc": "Which of the following is the next term in the series: 2, 6, 12, 20, 30, ?",
+            "opts": ["36", "40", "42", "48"],
+            "correct": 2
+        },
+        {
+            "title": "Vocabulary - Ephemeral Synonym (2025)",
+            "desc": "Choose the correct synonym for 'Ephemeral':",
+            "opts": ["a) Eternal", "b) Temporary", "c) Perpetual", "d) Endless"],
+            "correct": 1
+        },
+
+        # Logical Reasoning (10 questions)
+        {
+            "title": "Number Series - Square Pattern (2025)",
+            "desc": "Find next number: 1, 4, 9, 16, 25, ?",
+            "opts": ["30", "36", "40", "49"],
+            "correct": 1
+        },
+        {
+            "title": "Number Series - Prime Pattern (2025)",
+            "desc": "Find next number: 2, 3, 5, 7, 11, ?",
+            "opts": ["12", "13", "15", "17"],
+            "correct": 1
+        },
+        {
+            "title": "Number Series - Fibonacci Variant (2025)",
+            "desc": "Find next number: 1, 1, 2, 3, 5, 8, ?",
+            "opts": ["11", "13", "15", "21"],
+            "correct": 1
+        },
+        {
+            "title": "Letter Series - Skip Pattern (2025)",
+            "desc": "Find next letter: B, E, H, K, ?",
+            "opts": ["M", "N", "O", "P"],
+            "correct": 1
+        },
+        {
+            "title": "Coding-Decoding - Reverse Pattern (2025)",
+            "desc": "If 'ACCENTURE' is coded as 'ERUTNECCA', how is 'SYSTEM' coded?",
+            "opts": ["METSYS", "SYSMET", "TEMSYS", "MEYSTS"],
+            "correct": 0
+        },
+        {
+            "title": "Syllogism - Three Statements (2025)",
+            "desc": "Statements: 1. Some books are novels, 2. All novels are stories, 3. No story is a poem. Conclusions: I) Some books are stories, II) No novel is a poem, III) Some stories are books.",
+            "opts": ["Only I follows", "Only II follows", "All I, II, and III follow", "None follows"],
+            "correct": 2
+        },
+        {
+            "title": "Blood Relations - Complex (2025)",
+            "desc": "Pointing to a photograph, a man said, 'She is the daughter of my grandfather's only son.' How is the man related to the person in the photograph?",
+            "opts": ["Father", "Brother", "Sister", "Cousin"],
+            "correct": 2
+        },
+        {
+            "title": "Direction Sense - Multiple Turns (2025)",
+            "desc": "A person walks 10m north, then 5m east, then 10m south, then 5m west. Where is he from starting point?",
+            "opts": ["10m North", "5m East", "At starting point", "10m South"],
+            "correct": 2
+        },
+        {
+            "title": "Seating Arrangement - Circular (2025)",
+            "desc": "Six friends A, B, C, D, E, F sit around a circular table. A sits opposite D. B sits between A and C. E is not adjacent to A. Who sits opposite E?",
+            "opts": ["A", "B", "C", "F"],
+            "correct": 1
+        },
+        {
+            "title": "Ordering & Ranking (2025)",
+            "desc": "In a queue, Ravi is 15th from front and 20th from back. How many people are in the queue?",
+            "opts": ["35", "34", "33", "36"],
+            "correct": 1
+        },
+
+        # Verbal Ability (2 questions to complete total 30)
+        {
+            "title": "Reading Comprehension - Inference (2025)",
+            "desc": "Passage: 'Cloud computing has transformed how businesses operate. Companies can now access computing resources on-demand without maintaining physical infrastructure. This has led to significant cost savings and increased flexibility.' What is the main advantage mentioned?",
+            "opts": ["Hardware ownership", "Cost savings and increased flexibility", "Increased security risks", "Manual server setup"],
+            "correct": 1
+        },
+        {
+            "title": "Grammar - Parallelism (2025)",
+            "desc": "Choose the correct sentence:",
+            "opts": ["a) She likes reading, writing, and to dance", "b) She likes reading, writing, and dancing", "c) She likes to read, writing, and dancing", "d) She likes read, write, and dancing"],
+            "correct": 1
+        }
+    ]
+
+    items_to_add = []
+    for t in user_mcqs:
+        items_to_add.append({
+            "id": f"pmcq_{uuid.uuid4().hex[:6]}",
+            "type": "mcq",
+            "title": t["title"],
+            "description": t["desc"],
+            "options": t["opts"],
+            "correct_option": t["correct"],
+            "difficulty": "Medium",
+            "is_placement": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+
+    if items_to_add:
+        col.insert_many(items_to_add)
+        print(f"[questions] Seeded {len(items_to_add)} 2025 placement MCQs into MongoDB.")
+
+
+def _seed_placement_coding(count: int):
+    """Seed placement coding questions if fewer than 3 exist in DB."""
+    col = _get_col()
+    problems = [
+        {
+            "title": "Palindrome Check",
+            "description": "Given a string `s`, determine if it is a palindrome considering only alphanumeric characters and ignoring cases.",
+            "input_format": "A single string s",
+            "output_format": "Print 'true' if palindrome, else 'false'",
+            "examples": [{"input": "racecar", "output": "true"}, {"input": "hello", "output": "false"}],
+            "test_cases": [{"input": "racecar", "expected": "true"}, {"input": "hello", "expected": "false"}, {"input": "AmanaplanacanalPanama", "expected": "true"}],
+            "difficulty": "Easy"
+        },
+        {
+            "title": "Find Missing Number",
+            "description": "Given an array containing n distinct numbers taken from 0, 1, 2, ..., n, find the single missing number in the sequence.",
+            "input_format": "Space-separated integers",
+            "output_format": "The missing integer",
+            "examples": [{"input": "3 0 1", "output": "2"}],
+            "test_cases": [{"input": "3 0 1", "expected": "2"}, {"input": "0 1 2 4 5", "expected": "3"}],
+            "difficulty": "Medium"
+        },
+        {
+            "title": "Maximum Subarray Sum",
+            "description": "Given an integer array `nums`, find the contiguous subarray (containing at least one number) which has the largest sum and print its sum.",
+            "input_format": "Space-separated integers",
+            "output_format": "The maximum subarray sum integer",
+            "examples": [{"input": "-2 1 -3 4 -1 2 1 -5 4", "output": "6"}],
+            "test_cases": [{"input": "-2 1 -3 4 -1 2 1 -5 4", "expected": "6"}, {"input": "1 2 3 4", "expected": "10"}],
+            "difficulty": "Hard"
+        }
+    ]
+    items_to_add = []
+    for i in range(min(count, len(problems))):
+        p = problems[i]
+        items_to_add.append({
+            "id": f"pcoding_{uuid.uuid4().hex[:6]}",
+            "type": "coding",
+            "title": p["title"],
+            "description": p["description"],
+            "input_format": p["input_format"],
+            "output_format": p["output_format"],
+            "examples": p["examples"],
+            "test_cases": p["test_cases"],
+            "difficulty": p["difficulty"],
+            "time_limit": 1800,
+            "is_placement": True,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    if items_to_add:
+        col.insert_many(items_to_add)
+
