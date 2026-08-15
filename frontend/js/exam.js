@@ -34,28 +34,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function initExam() {
   setupEventListeners();
-  await fetchPlacementQuestions();
+
+  // Set initial mode timer immediately before network fetch so 60:00 never flashes!
+  const initialMins = (testMode === "mcq" || testMode === "resume") ? 40 : (testMode === "coding" ? 45 : 60);
+  userState.timeRemainingSeconds = initialMins * 60;
+  
+  const timerDisplay = document.getElementById("timer-display");
+  if (timerDisplay) {
+    timerDisplay.textContent = `${initialMins.toString().padStart(2, '0')}:00`;
+  }
 
   if (testMode === "mcq") {
     document.getElementById("tab-coding").style.display = "none";
     document.getElementById("coding-palette-container")?.style.setProperty("display", "none", "important");
-    userState.timeRemainingSeconds = 40 * 60; // 40 mins for MCQ test
     switchTab("mcq");
   } else if (testMode === "resume") {
     document.getElementById("tab-coding").style.display = "none";
     document.getElementById("coding-palette-container")?.style.setProperty("display", "none", "important");
-    userState.timeRemainingSeconds = 40 * 60; // 40 mins for Resume MCQ test (30 Qs)
     const tabMcqLabel = document.querySelector("#tab-mcq span:first-child");
     if (tabMcqLabel) tabMcqLabel.textContent = "📄 Section A: MCQs";
     switchTab("mcq");
   } else if (testMode === "coding") {
     document.getElementById("tab-mcq").style.display = "none";
     document.getElementById("mcq-palette-container")?.style.setProperty("display", "none", "important");
-    userState.timeRemainingSeconds = 45 * 60; // 45 mins for Coding test
     switchTab("coding");
   } else {
     switchTab("mcq");
   }
+
+  await fetchPlacementQuestions();
 
   renderMcqPalette();
   renderCodingPalette();
@@ -74,7 +81,8 @@ async function fetchPlacementQuestions() {
     
     examData.mcqs = data.mcq_questions || [];
     examData.coding = data.coding_questions || [];
-    examData.durationMinutes = data.duration_minutes || (testMode === "coding" ? 45 : 40);
+    examData.durationMinutes = data.duration_minutes || ((testMode === "mcq" || testMode === "resume") ? 40 : (testMode === "coding" ? 45 : 60));
+    
     userState.timeRemainingSeconds = examData.durationMinutes * 60;
 
     document.getElementById("mcq-badge-count").textContent = `${examData.mcqs.length} Qs`;
