@@ -239,8 +239,9 @@ def submit():
 
 @app.get("/questions/placement")
 def get_placement_questions():
-    """Get candidate placement test paper (30 MCQs + 3 Coding questions)."""
-    return jsonify(qs.get_placement_exam())
+    """Get candidate placement/resume test paper."""
+    mode = request.args.get("mode", "full")
+    return jsonify(qs.get_placement_exam(mode=mode))
 
 
 @app.post("/questions/placement/submit")

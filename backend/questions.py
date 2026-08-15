@@ -209,10 +209,10 @@ def delete(qid: str) -> bool:
     return result.deleted_count > 0
 
 
-def get_placement_exam() -> dict:
+def get_placement_exam(mode: str = "full") -> dict:
     """
-    Get 30 MCQs and 3 Coding questions for placement exam.
-    If database does not have 30 MCQs or 3 coding questions, auto-generate standard placement questions.
+    Get MCQs and Coding questions for placement/resume exam.
+    If database does not have MCQs or coding questions, auto-generate standard placement questions.
     """
     import random
 
@@ -234,8 +234,18 @@ def get_placement_exam() -> dict:
     random.shuffle(mcqs)
     random.shuffle(coding)
 
-    selected_mcqs = mcqs[:30]
-    selected_coding = coding[:3]
+    if mode == "resume":
+        selected_mcqs = mcqs[:40]
+        selected_coding = []
+    elif mode == "mcq":
+        selected_mcqs = mcqs[:30]
+        selected_coding = []
+    elif mode == "coding":
+        selected_mcqs = []
+        selected_coding = coding[:3]
+    else:
+        selected_mcqs = mcqs[:30]
+        selected_coding = coding[:3]
 
     # Prepare client-safe payload
     safe_mcqs = []
@@ -408,660 +418,1559 @@ def get_leaderboard() -> dict:
 
 
 def _seed_placement_mcqs(count: int):
-    """Seed benchmark placement MCQs with user-provided 2025 Quantitative, Logical, and Verbal questions."""
+    """Seed comprehensive 135 Chess Application & AI Engine Interview MCQs into MongoDB."""
     col = _get_col()
     
-    # 30 MCQ Questions set exactly as requested
     user_mcqs = [
-        # Quantitative Aptitude (18 questions)
+        # SECTION 1: APPLICATION ARCHITECTURE, JAVA SWING GUI & MULTITHREADING
         {
-            "title": "Percentage Problem (2025)",
-            "desc": "The price of a product increased by 20%. By what percentage should consumption be reduced to keep expenditure same?",
-            "opts": ["16.67%", "20%", "15%", "18.5%"],
-            "correct": 0
+            "title": "Q1 [Architecture] - Event Dispatch Thread (EDT) Worker Isolation",
+            "desc": "Why is the AI computation (Minimax search and LLM API requests) executed on separate worker threads rather than directly on the Event Dispatch Thread (EDT)?",
+            "opts": [
+                "A) Swing EDT only allows single-threaded mathematical calculations.",
+                "B) Running heavy computations on EDT blocks the UI event loop, causing the graphical user interface to freeze.",
+                "C) Java Swing graphics rendering fails if executed on the main thread.",
+                "D) HttpURLConnection throws a compile-time exception if invoked on EDT."
+            ],
+            "correct": 1,
+            "explanation": "The Swing Event Dispatch Thread (EDT) processes UI events (mouse clicks, drags) and screen repainting. Executing long-running algorithms like Minimax or network HTTP calls on the EDT freezes the UI, making the application non-responsive."
         },
         {
-            "title": "Mixture Problem (2025)",
-            "desc": "A mixture contains milk and water in ratio 3:2. If 10 liters of water is added, ratio becomes 2:3. Find initial quantity of mixture.",
-            "opts": ["15 liters", "20 liters", "25 liters", "30 liters"],
-            "correct": 1
+            "title": "Q2 [Multithreading] - Concurrency Guard Flag in AICoach",
+            "desc": "Consider the snippet from AICoach.java:\n    public static void fetchAdviceAsync(String moveDescription) {\n        if (isFetching) return;\n        isFetching = true;\n        coachAdvice = \"Coach: Analyzing move...\";\n        new Thread(() -> { ... }).start();\n    }\nWhat is the primary purpose of checking `if (isFetching) return;` at the beginning of this method?",
+            "opts": [
+                "A) To force the thread to wait until previous network request responds.",
+                "B) To act as a concurrency guard flag that prevents overlapping async API requests.",
+                "C) To prevent Java heap stack overflow errors during API serialization.",
+                "D) To reset the API key stored in .env."
+            ],
+            "correct": 1,
+            "explanation": "isFetching acts as a atomic guard state. If a request is currently processing, subsequent trigger calls return immediately, eliminating race conditions and duplicate HTTP requests to Groq/Ollama."
         },
         {
-            "title": "Profit & Loss - Successive Discounts (2025)",
-            "desc": "A shopkeeper gives two successive discounts of 10% and 20% on an item. What is the effective discount percentage?",
-            "opts": ["30%", "25%", "28%", "22%"],
-            "correct": 2
+            "title": "Q3 [GUI Rendering] - Swing Panel Redrawing Mechanism",
+            "desc": "In GamePanel.java, the game loop uses `public void run()` with `Thread.sleep()`. What mechanism is used to trigger GUI redrawing on the Swing panel?",
+            "opts": ["A) panel.drawNow()", "B) repaint()", "C) Graphics2D.flush()", "D) System.gc()"],
+            "correct": 1,
+            "explanation": "repaint() requests Swing to schedule a call to paintComponent(Graphics g), which safely renders the 8x8 checkerboard and piece sprites on the EDT."
         },
         {
-            "title": "Time & Work - Efficiency (2025)",
-            "desc": "A is twice as efficient as B. Together they complete a work in 12 days. In how many days will A alone complete it?",
-            "opts": ["24 days", "18 days", "16 days", "36 days"],
-            "correct": 1
+            "title": "Q4 [GUI Component] - Main Top-Level Container Class",
+            "desc": "Which top-level Java Swing container class serves as the main application window in chess.java?",
+            "opts": ["A) JPanel", "B) JFrame", "C) JDialog", "D) Canvas"],
+            "correct": 1,
+            "explanation": "JFrame is the top-level container that holds GamePanel (a JPanel), configures window titles, resize permissions, default close operations (EXIT_ON_CLOSE), and frame icons."
         },
         {
-            "title": "Simple Interest - Rate Calculation (2025)",
-            "desc": "A sum of ₹8,000 amounts to ₹9,600 in 4 years at simple interest. Find the rate of interest per annum.",
-            "opts": ["4%", "5%", "6%", "7.5%"],
-            "correct": 1
+            "title": "Q5 [Coordinate System] - Pixel Coordinate Calculation",
+            "desc": "The board is represented as an 8x8 grid. If `Board.SQUARE_SIZE = 100`, what are the pixel coordinates (x, y) of a piece located at column index 3 and row index 5?",
+            "opts": ["A) x = 300, y = 500", "B) x = 500, y = 300", "C) x = 3, y = 5", "D) x = 350, y = 550"],
+            "correct": 0,
+            "explanation": "Pixel coordinates are derived by x = col * SQUARE_SIZE and y = row * SQUARE_SIZE. For col = 3 and row = 5, x = 3 * 100 = 300 and y = 5 * 100 = 500."
         },
         {
-            "title": "Compound Interest - Half Yearly (2025)",
-            "desc": "Find compound interest on ₹5,000 for 1 year at 10% per annum, compounded half-yearly.",
-            "opts": ["₹500", "₹525", "₹512.50", "₹550"],
-            "correct": 2
+            "title": "Q6 [Event Handling] - Mouse Drag-and-Drop Event Capture",
+            "desc": "How does Mouse.java capture drag-and-drop input events in Java Swing?",
+            "opts": [
+                "A) By implementing ActionListener interface.",
+                "B) By extending MouseAdapter and overriding mousePressed, mouseDragged, and mouseReleased.",
+                "C) By polling the OS cursor position every 10 milliseconds.",
+                "D) By reading input streams from System.in."
+            ],
+            "correct": 1,
+            "explanation": "MouseAdapter is an abstract adapter class for receiving mouse events. Extending MouseAdapter allows overriding only relevant mouse handlers like mousePressed and mouseDragged."
         },
         {
-            "title": "Speed & Distance - Relative Speed (2025)",
-            "desc": "Two trains of lengths 100m and 150m are running in the same direction at speeds of 50 km/hr and 40 km/hr respectively. Find time taken by faster train to overtake slower train.",
-            "opts": ["60 seconds", "90 seconds", "75 seconds", "120 seconds"],
-            "correct": 1
+            "title": "Q7 [Graphics Optimization] - Graphics2D vs Standard Graphics",
+            "desc": "Why is Graphics2D preferred over standard Graphics in paintComponent() rendering?",
+            "opts": [
+                "A) Graphics2D provides advanced sub-pixel rendering, antialiasing, transformation matrix operations, and high-performance buffered image drawing.",
+                "B) Standard Graphics does not support PNG images.",
+                "C) Graphics2D automatically runs on GPU shaders.",
+                "D) Graphics is deprecated in Java 17."
+            ],
+            "correct": 0,
+            "explanation": "Graphics2D extends Graphics to provide fundamental controls over geometry, coordinate transformations, color management, and text/image rendering in Java AWT/Swing."
         },
         {
-            "title": "Speed & Distance - Average Speed (2025)",
-            "desc": "A person travels first half of distance at 40 km/hr and second half at 60 km/hr. Find average speed.",
-            "opts": ["50 km/hr", "48 km/hr", "52 km/hr", "45 km/hr"],
-            "correct": 1
+            "title": "Q8 [Resource Loading] - Classpath Sprite Loading via getResourceAsStream",
+            "desc": "In Piece.java, sprites are loaded via `ImageIO.read(getClass().getResourceAsStream(imagePath + \".png\"))`. What is the key advantage of using getResourceAsStream() over standard File path references?",
+            "opts": [
+                "A) It loads images 10 times faster.",
+                "B) It allows reading image resources embedded inside packaged compiled JAR files.",
+                "C) It automatically resizes the image to 100x100 pixels.",
+                "D) It converts PNG files to JPEG format."
+            ],
+            "correct": 1,
+            "explanation": "getResourceAsStream() reads files relative to the class path, enabling seamless resource resolution both during development and when bundled into executable JAR files."
         },
         {
-            "title": "Permutations - Arrangements (2025)",
-            "desc": "In how many ways can 5 people be arranged in a row if two particular people must sit together?",
-            "opts": ["120 ways", "24 ways", "48 ways", "60 ways"],
-            "correct": 2
+            "title": "Q9 [Double Buffering] - Eliminating Render Artifacts",
+            "desc": "Java Swing JPanel uses double buffering by default during painting. What problem does double buffering eliminate?",
+            "opts": [
+                "A) Out of memory errors.",
+                "B) Screen flickering caused by rendering intermediate frames directly into visible screen memory.",
+                "C) Slow network API responses.",
+                "D) Drag-and-drop mouse latency."
+            ],
+            "correct": 1,
+            "explanation": "Double buffering renders visual components into an off-screen image buffer first before flipping it onto the screen, preventing visual tear and flicker."
         },
         {
-            "title": "Combinations - Selection (2025)",
-            "desc": "In how many ways can 3 students be selected from a group of 8 students?",
-            "opts": ["56 ways", "336 ways", "24 ways", "112 ways"],
-            "correct": 0
+            "title": "Q10 [State Machine] - Game Phase Architecture",
+            "desc": "In GamePanel.java, game phases are controlled using integer constants (GAME_TITLE, PLAY, GAME_OVER, PROMOTION). What software design concept is this?",
+            "opts": ["A) Observer Pattern", "B) Finite State Machine (FSM)", "C) Singleton Pattern", "D) Factory Method"],
+            "correct": 1,
+            "explanation": "Managing distinct application states and transitioning between them based on game events (e.g., reaching rank 0 transitions state to PROMOTION) is a classic Finite State Machine pattern."
         },
         {
-            "title": "Pipes & Cisterns - Multiple Pipes (2025)",
-            "desc": "Three pipes A, B, C can fill a tank in 12, 15, and 20 hours respectively. If all three are opened together, how long will it take to fill the tank?",
-            "opts": ["4 hours", "5 hours", "6 hours", "8 hours"],
-            "correct": 1
+            "title": "Q11 [Clean Code] - Classpath Binary Resource Deployment",
+            "desc": "Why are piece sprites (.png) copied to the bin/piece/ directory during build compilation in run.ps1?",
+            "opts": [
+                "A) The Java compiler deletes original PNG files.",
+                "B) Compiled .class files look for classpath resources inside the output directory (bin/).",
+                "C) To compress image file sizes.",
+                "D) To bypass Windows file permission locks."
+            ],
+            "correct": 1,
+            "explanation": "At runtime, Java loads bytecode and classpath assets from the target binary output directory (bin/). Sprites must exist in bin/piece/ for getResourceAsStream() to locate them."
         },
         {
-            "title": "Probability - Cards (2025)",
-            "desc": "Two cards are drawn from a pack of 52 cards. What is the probability that both are aces?",
-            "opts": ["1/221", "1/169", "1/13", "4/663"],
-            "correct": 0
+            "title": "Q12 [Game Loop Mechanics] - Target Frame Duration at 60 FPS",
+            "desc": "A game loop executing at 60 FPS calculates target frame duration as approximately:",
+            "opts": ["A) 100 milliseconds", "B) 16.67 milliseconds", "C) 1 second", "D) 0.16 milliseconds"],
+            "correct": 1,
+            "explanation": "1000 ms / 60 frames ≈ 16.67 ms per frame."
         },
         {
-            "title": "Ratio & Proportion - Three Quantities (2025)",
-            "desc": "If A:B = 2:3 and B:C = 4:5, find A:B:C.",
-            "opts": ["2:3:5", "8:12:15", "6:12:15", "8:10:15"],
-            "correct": 1
+            "title": "Q13 [Thread Safety] - Invoking UI Mutations via SwingUtilities.invokeLater",
+            "desc": "Why should modifications to Swing UI components (e.g., updating labels or showing promotion dialogs) be executed via SwingUtilities.invokeLater() when triggered from background worker threads?",
+            "opts": [
+                "A) Background threads cannot read String objects.",
+                "B) Swing component structures are not thread-safe; mutating them off EDT can cause intermittent rendering bugs or deadlock.",
+                "C) invokeLater() increases thread CPU priority.",
+                "D) Java Swing crashes immediately if invoked off EDT."
+            ],
+            "correct": 1,
+            "explanation": "Swing UI components are single-threaded and bound to EDT. SwingUtilities.invokeLater() queues runnable actions onto EDT to ensure safe UI execution."
         },
         {
-            "title": "Percentage - Successive Changes (2025)",
-            "desc": "A number is first increased by 25% and then decreased by 20%. Find the net percentage change.",
-            "opts": ["5% increase", "5% decrease", "0% (no change)", "10% increase"],
-            "correct": 2
+            "title": "Q14 [Memory Management] - Garbage Collection Triggering",
+            "desc": "In GamePanel.java, when a piece is captured, it is removed from simpieces. Why is explicit array list removal necessary in Java?",
+            "opts": [
+                "A) To trigger Java garbage collection by removing references to unneeded piece objects.",
+                "B) Java does not have automatic garbage collection.",
+                "C) Otherwise captured pieces would still attempt to draw on screen.",
+                "D) Both A and C."
+            ],
+            "correct": 3,
+            "explanation": "Removing captured piece objects from active render lists stops them from being drawn and drops active object references so the Garbage Collector can reclaim heap memory."
         },
         {
-            "title": "Data Interpretation (2025)",
-            "desc": "Product B sold 40,000 units. Product A sold 25% more than Product B. Find Product A's sales.",
-            "opts": ["45,000 units", "50,000 units", "55,000 units", "60,000 units"],
-            "correct": 1
-        },
-        {
-            "title": "Ages Problem - Sum of Ages (2025)",
-            "desc": "The sum of the ages of A and B is 60 years, and A is twice as old as B. What are their ages?",
-            "opts": ["A: 30, B: 30", "A: 40, B: 20", "A: 45, B: 15", "A: 36, B: 24"],
-            "correct": 1
-        },
-        {
-            "title": "Number Series - Consecutive Even Differences (2025)",
-            "desc": "Which of the following is the next term in the series: 2, 6, 12, 20, 30, ?",
-            "opts": ["36", "40", "42", "48"],
-            "correct": 2
-        },
-        {
-            "title": "Vocabulary - Ephemeral Synonym (2025)",
-            "desc": "Choose the correct synonym for 'Ephemeral':",
-            "opts": ["a) Eternal", "b) Temporary", "c) Perpetual", "d) Endless"],
-            "correct": 1
+            "title": "Q15 [Concurrency Guard] - Race Conditions in Async State",
+            "desc": "What risk occurs if isFetching variable in AICoach.java is accessed across multiple threads without synchronization or atomic state management?",
+            "opts": [
+                "A) Java syntax compilation error.",
+                "B) Race conditions where two threads read isFetching == false simultaneously and spawn duplicate network requests.",
+                "C) Disk corruptions in .env.",
+                "D) Automatic model deletion in Ollama."
+            ],
+            "correct": 1,
+            "explanation": "Without volatile access or synchronized atomic guards, thread memory caching can lead to simultaneous execution of critical sections, spawning redundant async requests."
         },
 
-        # Logical Reasoning (10 questions)
+        # SECTION 2: OBJECT-ORIENTED DESIGN, BASE PIECE & INHERITANCE
         {
-            "title": "Number Series - Square Pattern (2025)",
-            "desc": "Find next number: 1, 4, 9, 16, 25, ?",
-            "opts": ["30", "36", "40", "49"],
-            "correct": 1
+            "title": "Q16 [OOP Inheritance] - Base Piece Polymorphism",
+            "desc": "All piece types (Pawn, Rook, Knight, Bishop, Queen, King) inherit from base class Piece. What is the primary OO benefit of this structure?",
+            "opts": [
+                "A) Eliminates the need for constructors.",
+                "B) Polymorphic abstraction allowing generic lists like ArrayList<Piece> to store, update, draw, and evaluate all pieces identically.",
+                "C) Makes piece objects static.",
+                "D) Forces all pieces to move in straight lines."
+            ],
+            "correct": 1,
+            "explanation": "Polymorphism allows collections like ArrayList<Piece> to manage any piece subclass uniformally without rigid type branching."
         },
         {
-            "title": "Number Series - Prime Pattern (2025)",
-            "desc": "Find next number: 2, 3, 5, 7, 11, ?",
-            "opts": ["12", "13", "15", "17"],
-            "correct": 1
+            "title": "Q17 [Method Overriding] - Subclass Movement Abstraction",
+            "desc": "Look at Piece.java:\n    public boolean canMove(int targetCol, int targetRow) { return false; }\nWhy does the base class define canMove to return false?",
+            "opts": [
+                "A) Base Piece is a placeholder that requires concrete piece subclasses to override specific movement validation rules.",
+                "B) To disable all piece movements by default.",
+                "C) Because Piece is marked as final.",
+                "D) To generate compile-time warnings."
+            ],
+            "correct": 0,
+            "explanation": "Piece serves as a base class where default move validation fails unless overridden by concrete piece classes with specific movement rules."
         },
         {
-            "title": "Number Series - Fibonacci Variant (2025)",
-            "desc": "Find next number: 1, 1, 2, 3, 5, 8, ?",
-            "opts": ["11", "13", "15", "21"],
-            "correct": 1
+            "title": "Q18 [Encapsulation] - Position Tracking and Rollback",
+            "desc": "Fields col, row, preCol, preRow track piece positions. What is the role of preCol and preRow during move drag-and-drop operations?",
+            "opts": [
+                "A) They record the score of the previous turn.",
+                "B) They preserve original board coordinates prior to move validation, enabling easy position rollback if a move is illegal.",
+                "C) They store the AI search tree depth.",
+                "D) They hold target coordinates for castling."
+            ],
+            "correct": 1,
+            "explanation": "Keeping previous indices (preCol, preRow) allows the game engine to instantly restore a piece to its starting square if move checks fail."
         },
         {
-            "title": "Letter Series - Skip Pattern (2025)",
-            "desc": "Find next letter: B, E, H, K, ?",
-            "opts": ["M", "N", "O", "P"],
-            "correct": 1
+            "title": "Q19 [Polymorphism in Practice] - Dynamic Method Dispatch",
+            "desc": "What happens when `piece.canMove(c, r)` is executed on a reference variable `Piece piece = new Knight(WHITE, 1, 0)`?",
+            "opts": [
+                "A) Calls Piece.canMove().",
+                "B) Calls Knight.canMove() at runtime via Dynamic Method Dispatch.",
+                "C) Throws a ClassCastException.",
+                "D) Returns false always."
+            ],
+            "correct": 1,
+            "explanation": "Java uses runtime dynamic binding to resolve virtual method calls to the concrete instantiated object class (Knight)."
         },
         {
-            "title": "Coding-Decoding - Reverse Pattern (2025)",
-            "desc": "If 'ACCENTURE' is coded as 'ERUTNECCA', how is 'SYSTEM' coded?",
-            "opts": ["METSYS", "SYSMET", "TEMSYS", "MEYSTS"],
-            "correct": 0
+            "title": "Q20 [Grid Math] - Centering Sprite Coordinates",
+            "desc": "Look at Piece.java:\n    public int getCol(int x) {\n        return (x + Board.HALF_SQUARE_SIZE) / Board.SQUARE_SIZE;\n    }\nWhat feature does this grid formula provide during visual piece dragging?",
+            "opts": [
+                "A) Converts integer columns into floating point angles.",
+                "B) Snaps the center of the dragged sprite to the nearest board square column index.",
+                "C) Prevents piece collision bugs.",
+                "D) Calculates diagonal distance."
+            ],
+            "correct": 1,
+            "explanation": "Adding HALF_SQUARE_SIZE shifts the pixel midpoint of the dragged sprite before integer division, causing coordinates to round naturally to nearest board column center."
         },
         {
-            "title": "Syllogism - Three Statements (2025)",
-            "desc": "Statements: 1. Some books are novels, 2. All novels are stories, 3. No story is a poem. Conclusions: I) Some books are stories, II) No novel is a poem, III) Some stories are books.",
-            "opts": ["Only I follows", "Only II follows", "All I, II, and III follow", "None follows"],
-            "correct": 2
+            "title": "Q21 [Straight Line Collision Detection] - Intervening Obstructions",
+            "desc": "In Piece.java, pieceIsOnStraightLine(targetCol, targetRow) iterates over squares between preCol/preRow and target square. What does returning true signify?",
+            "opts": [
+                "A) The line path is clear.",
+                "B) There is an blocking piece obstructing the straight-line path.",
+                "C) The target square is off the board.",
+                "D) The move is a valid castle."
+            ],
+            "correct": 1,
+            "explanation": "Returning true indicates that an intervening square along the row/column ray contains another piece, blocking sliding movement (Rook/Queen)."
         },
         {
-            "title": "Blood Relations - Complex (2025)",
-            "desc": "Pointing to a photograph, a man said, 'She is the daughter of my grandfather's only son.' How is the man related to the person in the photograph?",
-            "opts": ["Father", "Brother", "Sister", "Cousin"],
-            "correct": 2
+            "title": "Q22 [Diagonal Collision Detection] - Diagonal Step Inspection",
+            "desc": "In pieceIsOnDiagonalLine(), how is intervening square calculation performed?",
+            "opts": [
+                "A) Iterating step-by-step with diff = Math.abs(c - preCol) for matching row/col offsets.",
+                "B) Using graph Dijkstra algorithm.",
+                "C) Checking only 1 adjacent square.",
+                "D) Evaluating Knight jump offsets."
+            ],
+            "correct": 0,
+            "explanation": "Diagonal step checking increments/decrements column and row indices by equal step deltas (diff), verifying whether intermediate diagonal squares are unoccupied."
         },
         {
-            "title": "Direction Sense - Multiple Turns (2025)",
-            "desc": "A person walks 10m north, then 5m east, then 10m south, then 5m west. Where is he from starting point?",
-            "opts": ["10m North", "5m East", "At starting point", "10m South"],
-            "correct": 2
+            "title": "Q23 [Piece Equality & Identification] - Target Square Occupant Lookup",
+            "desc": "In Piece.java, how does getHittingP(targetCol, targetRow) locate a piece at target coordinates?",
+            "opts": [
+                "A) Searches SQL database.",
+                "B) Iterates through getBoardList() checking if piece.col == targetCol && piece.row == targetRow && piece != this.",
+                "C) Compares sprite image colors.",
+                "D) Checks preCol values."
+            ],
+            "correct": 1,
+            "explanation": "getHittingP iterates over active board pieces, matching target column and row while excluding the moving piece itself (piece != this)."
         },
         {
-            "title": "Seating Arrangement - Circular (2025)",
-            "desc": "Six friends A, B, C, D, E, F sit around a circular table. A sits opposite D. B sits between A and C. E is not adjacent to A. Who sits opposite E?",
-            "opts": ["A", "B", "C", "F"],
-            "correct": 1
+            "title": "Q24 [Validity Checking] - Friendly Fire Prevention",
+            "desc": "Look at isValidSquare() in Piece.java:\n    public boolean isValidSquare(int targetCol, int targetRow) {\n        hittingP = getHittingP(targetCol, targetRow);\n        if (hittingP == null) return true;\n        else {\n            if (hittingP.color != this.color) return true;\n            else hittingP = null;\n        }\n        return false;\n    }\nWhat square target condition causes isValidSquare to return false?",
+            "opts": [
+                "A) Empty target square.",
+                "B) Target square occupied by an enemy piece.",
+                "C) Target square occupied by a friendly piece of the same color.",
+                "D) Target square located on rank 4."
+            ],
+            "correct": 2,
+            "explanation": "In chess, a piece cannot land on a square occupied by a piece of its own color."
         },
         {
-            "title": "Ordering & Ranking (2025)",
-            "desc": "In a queue, Ravi is 15th from front and 20th from back. How many people are in the queue?",
-            "opts": ["35", "34", "33", "36"],
-            "correct": 1
+            "title": "Q25 [Type Enum] - Type Safety via Enum",
+            "desc": "Type.java defines `enum Type { PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING }`. Why use Java enum over plain integers?",
+            "opts": [
+                "A) Enums provide strong type safety, readable code constants, and prevent invalid numerical values.",
+                "B) Enums run faster than primitive integers.",
+                "C) Enums take 0 bytes of memory.",
+                "D) Swing requiring enums for rendering."
+            ],
+            "correct": 0,
+            "explanation": "Enums restrict values to predefined valid constants, catching invalid piece type assignments at compile time."
+        },
+        {
+            "title": "Q26 [Board Reference Abstraction] - Cloned Board List Bindings",
+            "desc": "Piece.java includes getBoardList():\n    public List<Piece> getBoardList() {\n        return (boardList != null) ? boardList : GamePanel.simpieces;\n    }\nWhy is boardList designed to support custom list overrides?",
+            "opts": [
+                "A) To allow AI search engines to evaluate isolated cloned board lists without altering active game pieces in GamePanel.simpieces.",
+                "B) To handle piece rendering on separate monitors.",
+                "C) To bypass garbage collection.",
+                "D) To change piece colors dynamically."
+            ],
+            "correct": 0,
+            "explanation": "Providing custom boardList bindings allows cloned pieces in AI simulation threads to run movement checks against isolated board state copies."
+        },
+        {
+            "title": "Q27 [Sprite Memory] - Image Buffering on Initialization",
+            "desc": "Piece sprites are loaded into BufferedImage image. What is the advantage of storing loaded images in memory on initialization?",
+            "opts": [
+                "A) Avoids reading disk files repeatedly on every single 60 FPS animation frame.",
+                "B) Reduces CPU usage to 0%.",
+                "C) Converts PNG into Vector graphics.",
+                "D) Allows sprites to rotate automatically."
+            ],
+            "correct": 0,
+            "explanation": "Disk I/O is slow. Loading image buffers once into heap RAM on object construction allows rapid 60 FPS drawing via hardware-accelerated memory."
+        },
+        {
+            "title": "Q28 [Abstract vs Concrete] - Superclass Instantiation Model",
+            "desc": "Why is Piece suitable as a superclass rather than instantiating raw Piece objects directly?",
+            "opts": [
+                "A) Raw pieces have no inherent movement rules; movement is specified by concrete subclasses (Knight, Rook, etc.).",
+                "B) Piece requires 100 parameters.",
+                "C) Swing crashes on raw class instances.",
+                "D) Java forbids parent classes."
+            ],
+            "correct": 0,
+            "explanation": "Generic pieces do not exist in chess; specific rules belong to concrete subclasses overriding canMove()."
+        },
+        {
+            "title": "Q29 [Board Bound Checking] - Grid Boundary Enforcement",
+            "desc": "Look at `isWithinBoard(int targetCol, int targetRow)`:\n    return targetCol >= 0 && targetCol <= 7 && targetRow >= 0 && targetRow <= 7;\nWhat occurs if a piece move check omits this call?",
+            "opts": [
+                "A) Moves landing outside indices 0..7 attempt out-of-bounds array or board reference evaluations.",
+                "B) The piece transforms into a Queen.",
+                "C) Game speed doubles.",
+                "D) AI depth increases."
+            ],
+            "correct": 0,
+            "explanation": "Chess boards are bounded 8x8 grids. Checking boundary limits prevents logical glitches and array index out-of-bounds errors."
+        },
+        {
+            "title": "Q30 [Position Reset] - Restoring Invalid Drag Position",
+            "desc": "What does resetPosition() in Piece.java perform?",
+            "opts": [
+                "A) Moves piece to starting rank at game launch.",
+                "B) Restores col = preCol and row = preRow, resetting pixel coordinates back to original pre-drag state.",
+                "C) Promotes pawn to queen.",
+                "D) Deletes piece sprite."
+            ],
+            "correct": 1,
+            "explanation": "When an attempted user drag-and-drop move is declared invalid, resetPosition() snaps the visual piece back to its previous square."
         },
 
+        # SECTION 3: CONCRETE PIECE RULES & SPECIAL MOVES
         {
-            "title": "Vocabulary - Synonyms: MAGNIFICENT (2025)",
-            "desc": "Find the synonym of 'MAGNIFICENT':",
-            "opts": ["a) Ordinary", "b) Splendid", "c) Small", "d) Ugly"],
+            "title": "Q31 [Pawn Direction Logic] - Vertical Row Index Direction",
+            "desc": "In Pawn.java, moveValue is set based on piece color:\n    moveValue = (color == GamePanel.WHITE) ? -1 : 1;\nWhy is moveValue negative (-1) for White and positive (+1) for Black?",
+            "opts": [
+                "A) White pieces move down towards row 7, Black pieces move up.",
+                "B) Board row index 0 represents rank 8 (top of screen, Black side) and row index 7 represents rank 1 (bottom, White side).",
+                "C) White pieces move backward.",
+                "D) Math.abs() requires negative values."
+            ],
             "correct": 1,
-            "explanation": "Magnificent means impressively beautiful or grand, so 'Splendid' is the synonym."
+            "explanation": "Computer screen graphics coordinates place y = 0 at the top. White starts at row 6/7 and advances upward towards row 0 (negative row direction)."
         },
         {
-            "title": "Vocabulary - Antonyms: BRILLIANT (2025)",
-            "desc": "Find the antonym of 'BRILLIANT':",
-            "opts": ["a) Bright", "b) Dull", "c) Shining", "d) Smart"],
-            "correct": 1,
-            "explanation": "Brilliant means very bright or intelligent, so 'Dull' is the antonym."
+            "title": "Q32 [Pawn Initial Double Step] - Initial Two-Square Move Criteria",
+            "desc": "A pawn can move 2 squares forward if:",
+            "opts": [
+                "A) moved == false, target column matches, intermediate square is empty, and starting row is rank 2/7 (preRow == 6 or 1).",
+                "B) The pawn captures an enemy piece.",
+                "C) The king has castled.",
+                "D) It is the AI's first turn."
+            ],
+            "correct": 0,
+            "explanation": "Pawns can advance 2 squares strictly on their initial move provided path squares are completely clear of obstructions."
         },
         {
-            "title": "Sentence Correction - Vowel Sound (2025)",
-            "desc": "Choose the correct sentence:",
-            "opts": ["a) He is a honest man", "b) He is an honest man", "c) He is the honest man", "d) He is honest man"],
+            "title": "Q33 [En Passant State Tracking] - Marking Double Step",
+            "desc": "In Piece.java, what sets twoStepped = true?",
+            "opts": [
+                "A) Moving a knight 2 squares horizontally.",
+                "B) A pawn advancing 2 ranks forward in a single move (Math.abs(row - preRow) == 2).",
+                "C) Castling across 2 squares.",
+                "D) Promoted pawn taking 2 turns."
+            ],
             "correct": 1,
-            "explanation": "'Honest' starts with a silent 'h' and a vowel sound, so 'an' is used."
+            "explanation": "The twoStepped flag is set when a pawn makes a double-step initial advance, making it eligible for en passant capture on the immediate next turn."
+        },
+        {
+            "title": "Q34 [En Passant Capture Mechanics] - Adjacent Capture Rule",
+            "desc": "How does Pawn.canMove() identify an en passant capture?",
+            "opts": [
+                "A) Target row has enemy Queen.",
+                "B) Pawn moves diagonally 1 square into empty space behind an adjacent enemy pawn that has twoStepped == true.",
+                "C) King moves 2 steps.",
+                "D) Pawn moves backward 1 rank."
+            ],
+            "correct": 1,
+            "explanation": "En passant allows a pawn to capture an enemy pawn that passed over an attacked square via double-step on the preceding move."
+        },
+        {
+            "title": "Q35 [Knight Move Vector Math] - L-Shape Offsets Product",
+            "desc": "In Knight.java, valid movement satisfies:\n    Math.abs(targetCol - preCol) * Math.abs(targetRow - preRow) == 2\nWhy does this mathematical formula validate all 8 Knight jump moves?",
+            "opts": [
+                "A) Knights move in L-shapes: 2 steps in one axis and 1 step in perpendicular axis (2 * 1 = 2).",
+                "B) Knights jump over 2 pieces.",
+                "C) Knights occupy 2 squares simultaneously.",
+                "D) It converts negative floats into integers."
+            ],
+            "correct": 0,
+            "explanation": "All L-shaped offsets (±2, ±1) or (±1, ±2) have absolute coordinate deltas whose product equals 2 * 1 = 2."
+        },
+        {
+            "title": "Q36 [Knight Obstruction Exemption] - Intermediate Jump Exemption",
+            "desc": "Why does Knight.canMove() NOT call pieceIsOnStraightLine() or pieceIsOnDiagonalLine()?",
+            "opts": [
+                "A) Knights are not implemented in Java.",
+                "B) Knights jump over intermediate pieces directly to target destination squares.",
+                "C) Knights move only along rank 0.",
+                "D) Knights capture friendly pieces."
+            ],
+            "correct": 1,
+            "explanation": "Knights possess unique jumping mechanics in chess; intermediate squares between start and target do not obstruct Knight movement."
+        },
+        {
+            "title": "Q37 [Bishop Movement] - Diagonal Ray Trajectory",
+            "desc": "A Bishop can legally move to (targetCol, targetRow) if:",
+            "opts": [
+                "A) Absolute column delta equals absolute row delta (Math.abs(targetCol - preCol) == Math.abs(targetRow - preRow)) and diagonal path is unblocked.",
+                "B) Target column matches current column.",
+                "C) Target square contains a pawn.",
+                "D) Target row is rank 0."
+            ],
+            "correct": 0,
+            "explanation": "Diagonal moves require equal changes in horizontal and vertical distance along clear diagonal paths."
+        },
+        {
+            "title": "Q38 [Rook Movement] - Straight Line Trajectory",
+            "desc": "A Rook can legally move to (targetCol, targetRow) if:",
+            "opts": [
+                "A) targetCol == preCol OR targetRow == preRow, and straight line path is unblocked.",
+                "B) Move distance is exactly 2 squares.",
+                "C) Target square is diagonal.",
+                "D) King has not moved."
+            ],
+            "correct": 0,
+            "explanation": "Rooks slide horizontally or vertically along straight lines unblocked by other pieces."
+        },
+        {
+            "title": "Q39 [Queen Movement Composition] - Straight and Diagonal Combination",
+            "desc": "How is Queen.canMove() implemented in Queen.java?",
+            "opts": [
+                "A) Re-implementing custom ray logic from scratch.",
+                "B) Combining Rook straight-line checks and Bishop diagonal-line checks: (straightLine || diagonalLine).",
+                "C) Inheriting directly from Knight.",
+                "D) Calling Minimax function."
+            ],
+            "correct": 1,
+            "explanation": "A Queen combines the full movement capabilities of a Rook and a Bishop."
+        },
+        {
+            "title": "Q40 [King Movement] - Single Adjacent Step",
+            "desc": "What is the standard single-square movement condition for King.java?",
+            "opts": [
+                "A) Max step distance of 1 square in any adjacent direction (horizontal, vertical, diagonal).",
+                "B) 2 squares in any direction.",
+                "C) Straight lines only.",
+                "D) Jump over adjacent pieces."
+            ],
+            "correct": 0,
+            "explanation": "The King can step 1 square in any direction provided target square is valid and safe."
+        },
+        {
+            "title": "Q41 [Kingside Castling Criteria] - Short Castle Requirements",
+            "desc": "For Kingside castling (O-O), what conditions must be satisfied in King.canMove()?",
+            "opts": [
+                "A) King and Kingside Rook have not moved, intervening squares (preCol+1, preCol+2) are empty, and Rook exists on preCol+3.",
+                "B) King is under check.",
+                "C) Pawn is promoted.",
+                "D) Target square has enemy piece."
+            ],
+            "correct": 0,
+            "explanation": "Castling requires that neither King nor Rook has previously moved and all squares between them are unoccupied."
+        },
+        {
+            "title": "Q42 [Queenside Castling Criteria] - Long Castle Intervening Squares",
+            "desc": "For Queenside castling (O-O-O), how many intervening squares must be empty between King (col 4) and Queenside Rook (col 0)?",
+            "opts": ["A) 1 square (col 3)", "B) 2 squares (col 3, col 2)", "C) 3 squares (col 3, col 2, col 1)", "D) 4 squares"],
+            "correct": 2,
+            "explanation": "Queenside castling requires 3 clear squares (d-file, c-file, b-file) between King on e-file and Rook on a-file."
+        },
+        {
+            "title": "Q43 [Castling Safety Requirement] - Check Restriction in Castling",
+            "desc": "In chess rules, can a King castle through or out of a square that is under attack by an enemy piece?",
+            "opts": [
+                "A) Yes, castling ignores checks.",
+                "B) No, castling is illegal if the King is currently in check or if any square the King passes through/lands on is under attack.",
+                "C) Only in Player vs Player mode.",
+                "D) Only during Queenside castling."
+            ],
+            "correct": 1,
+            "explanation": "Official chess rules strictly forbid castling out of check, through check, or into check."
+        },
+        {
+            "title": "Q44 [Pawn Promotion Trigger] - Promotion Rank Reached",
+            "desc": "In GamePanel.java, when does pawn promotion occur?",
+            "opts": [
+                "A) When a pawn reaches row index 0 (for White) or row index 7 (for Black).",
+                "B) When a pawn captures a Queen.",
+                "C) When a pawn moves 2 steps.",
+                "D) When the game clock hits 0."
+            ],
+            "correct": 0,
+            "explanation": "Reaching the farthest opposite rank (rank 8 for White = row 0, rank 1 for Black = row 7) triggers mandatory pawn promotion."
+        },
+        {
+            "title": "Q45 [Pawn Promotion Selection] - FIDE Promotion Choices",
+            "desc": "In this project's promotion modal UI, which piece types can a user promote a pawn into?",
+            "opts": [
+                "A) Queen only.",
+                "B) Queen, Rook, Bishop, or Knight.",
+                "C) King or Pawn.",
+                "D) Super-Pawn."
+            ],
+            "correct": 1,
+            "explanation": "FIDE rules allow pawn promotion to any major or minor piece of the same color: Queen, Rook, Bishop, or Knight."
         },
 
-        # 2024 Quantitative Aptitude Questions
+        # SECTION 4: MOVE GENERATION, LEGALITY & KING CHECK SIMULATION
         {
-            "title": "Profit & Loss - Markup & Discount (2024)",
-            "desc": "A shopkeeper marks an item 30% above cost price and gives 10% discount. Find his profit percentage.",
-            "opts": ["15%", "17%", "20%", "23%"],
-            "correct": 1,
-            "explanation": "Let CP = ₹100. MP = ₹130. SP = ₹130 - 10% of 130 = ₹117. Profit % = 17%."
-        },
-        {
-            "title": "Time & Work - Partial Work (2024)",
-            "desc": "A and B can complete a work in 20 days and 30 days respectively. They work together for 6 days, then A leaves. In how many days will B complete the remaining work?",
-            "opts": ["10 days", "12 days", "15 days", "18 days"],
-            "correct": 2,
-            "explanation": "A + B 1-day work = 1/20 + 1/30 = 1/12. In 6 days = 1/2. Remaining 1/2 work done by B in 15 days."
-        },
-        {
-            "title": "Percentage Calculation (2024)",
-            "desc": "If 20% of a number is 60, what is 35% of that number?",
-            "opts": ["90", "105", "120", "140"],
-            "correct": 1,
-            "explanation": "Number = 60 × 100/20 = 300. 35% of 300 = 105."
-        },
-        {
-            "title": "Ratio & Proportion - Age Ratio (2024)",
-            "desc": "The ratio of ages of A and B is 3:5. After 10 years, the ratio becomes 5:7. Find the present age of A.",
-            "opts": ["12 years", "15 years", "18 years", "25 years"],
-            "correct": 1,
-            "explanation": "(3x+10)/(5x+10) = 5/7 => x = 5. A's age = 3 × 5 = 15 years."
-        },
-        {
-            "title": "Simple Interest - Two Amounts (2024)",
-            "desc": "A sum of money becomes ₹2,400 in 2 years and ₹3,200 in 4 years at simple interest. Find the principal amount.",
-            "opts": ["₹1,200", "₹1,600", "₹1,800", "₹2,000"],
-            "correct": 1,
-            "explanation": "Interest for 2 yrs = 3200 - 2400 = ₹800. Principal = 2400 - 800 = ₹1,600."
-        },
-        {
-            "title": "Compound Interest - Annual (2024)",
-            "desc": "Find compound interest on ₹10,000 for 2 years at 10% per annum, compounded annually.",
-            "opts": ["₹2,000", "₹2,100", "₹2,200", "₹2,400"],
-            "correct": 1,
-            "explanation": "Amount = 10000 × (1.1)^2 = ₹12,100. CI = 12100 - 10000 = ₹2,100."
-        },
-        {
-            "title": "Speed & Distance - Platform Crossing (2024)",
-            "desc": "A train 150 meters long passes a platform 200 meters long in 20 seconds. Find the speed of the train in km/hr.",
-            "opts": ["54 km/hr", "63 km/hr", "72 km/hr", "80 km/hr"],
-            "correct": 1,
-            "explanation": "Total distance = 350m. Speed = 350/20 = 17.5 m/s = 17.5 × 18/5 = 63 km/hr."
-        },
-        {
-            "title": "Pipes & Cisterns - Filling & Emptying (2024)",
-            "desc": "Pipe A fills a tank in 10 hours and Pipe B empties it in 15 hours. How many hours will it take to fill a half empty tank?",
-            "opts": ["10 hours", "12 hours", "15 hours", "30 hours"],
-            "correct": 2,
-            "explanation": "Net rate = 1/10 - 1/15 = 1/30. Time for half tank = (1/2) / (1/30) = 15 hours."
-        },
-        {
-            "title": "Permutations - Code Words (2024)",
-            "desc": "A code word consists of two English alphabets followed by two distinct numbers between 1 and 9 (e.g. CA23). How many such code words are there?",
-            "opts": ["48,672", "52,480", "42,120", "65,536"],
+            "title": "Q46 [Move Candidate Generation] - Trajectory Filtering",
+            "desc": "Why does MoveGenerator.java first filter candidate target squares before invoking canMove()?",
+            "opts": [
+                "A) To reduce unnecessary move validation calculations across off-board or irrelevant squares.",
+                "B) Because canMove() throws exceptions on empty squares.",
+                "C) To force AI search depth to 1.",
+                "D) To clear board memory."
+            ],
             "correct": 0,
-            "explanation": "Alphabets = 26 × 26 = 676. Numbers = 9 × 8 = 72. Total = 676 × 72 = 48,672."
+            "explanation": "Generating geometric candidate target vectors (e.g., ray trajectories or knight jump offsets) narrows search space, improving move generation efficiency."
         },
         {
-            "title": "Probability - Two Dice (2024)",
-            "desc": "Two dice are thrown. What is the probability of getting a sum of 7?",
-            "opts": ["1/6", "1/12", "5/36", "1/4"],
+            "title": "Q47 [Simulated Move Application] - Speculative Board Mutation",
+            "desc": "Look at MoveGenerator.java:\n    piece.col = c;\n    piece.row = r;\n    if (targetPiece != null) simpieces.remove(targetPiece);\nWhat is the purpose of temporarily mutating piece.col/row and removing targetPiece from simpieces?",
+            "opts": [
+                "A) To render move graphics on screen.",
+                "B) To simulate candidate move board state in order to test if King becomes exposed to check.",
+                "C) To save game state to disk.",
+                "D) To notify LLM coach."
+            ],
+            "correct": 1,
+            "explanation": "Board mutation simulates the prospective state. The engine then checks King safety (isIllegal) on that hypothetical state."
+        },
+        {
+            "title": "Q48 [Move Rollback Integrity] - Restoring Speculative Mutations",
+            "desc": "Immediately after checking isIllegal(), MoveGenerator executes:\n    piece.col = origCol;\n    piece.row = origRow;\n    if (targetPiece != null) simpieces.add(targetPiece);\nWhy is this rollback step mandatory?",
+            "opts": [
+                "A) To undo test mutations and restore original board state cleanly for subsequent candidate evaluations.",
+                "B) To trigger move sounds.",
+                "C) To flip turn color.",
+                "D) To execute castling."
+            ],
             "correct": 0,
-            "explanation": "Favorable outcomes = 6 ((1,6),(2,5),(3,4),(4,3),(5,2),(6,1)). Total = 36. Prob = 6/36 = 1/6."
+            "explanation": "Search routines evaluate dozens of candidate moves. Reverting temporary changes guarantees board state integrity remains pristine for next iterations."
         },
         {
-            "title": "Mixtures & Alligations - Ratio (2024)",
-            "desc": "In what ratio should water be mixed with milk costing ₹12 per liter to get a mixture worth ₹8 per liter?",
-            "opts": ["1:2", "2:3", "1:3", "3:4"],
+            "title": "Q49 [King Check Detection Logic] - Enemy Move Validation against King",
+            "desc": "In isIllegal(simpieces, currentColor), how does the method detect if currentColor King is in check?",
+            "opts": [
+                "A) Checks if King position equals target position.",
+                "B) Finds King of currentColor, then loops through all enemy pieces checking if enemy.canMove(king.col, king.row) == true.",
+                "C) Reads .env settings.",
+                "D) Checks if King moved == true."
+            ],
+            "correct": 1,
+            "explanation": "If any enemy piece can legally capture the King on the current board configuration, the King is in check, rendering the candidate move illegal."
+        },
+        {
+            "title": "Q50 [Checkmate Definition] - Dual Conditions for Checkmate",
+            "desc": "In GamePanel.java, a player is in Checkmate when:",
+            "opts": [
+                "A) Player's King is currently in check AND MoveGenerator.generateLegalMoves() returns an empty list (0 legal moves).",
+                "B) Player's King is captured.",
+                "C) Player loses their Queen.",
+                "D) Minimax search reaches depth 10."
+            ],
             "correct": 0,
-            "explanation": "Using alligation ratio: (12-8) : (8-0) = 4 : 8 = 1 : 2."
+            "explanation": "Checkmate requires two simultaneous conditions: the King is under active attack (check), and no legal escape/blocking/capture move exists."
         },
         {
-            "title": "Average - Excluded Number (2024)",
-            "desc": "The average of 5 numbers is 25. If one number is excluded, the average becomes 23. Find the excluded number.",
-            "opts": ["30", "33", "35", "28"],
-            "correct": 1,
-            "explanation": "Sum of 5 = 125. Sum of 4 = 92. Excluded number = 125 - 92 = 33."
+            "title": "Q51 [Stalemate Definition] - Safe King with Zero Moves",
+            "desc": "A player is in Stalemate when:",
+            "opts": [
+                "A) Player's King is NOT in check, but the player has 0 legal moves available on their turn.",
+                "B) Both players have equal material points.",
+                "C) Game timer expires.",
+                "D) Pawns are locked."
+            ],
+            "correct": 0,
+            "explanation": "Stalemate occurs when the player to move is not in check but has no legal move available, resulting in an immediate draw."
         },
         {
-            "title": "Ages - Intervals (2024)",
-            "desc": "The sum of ages of 5 children born at intervals of 3 years is 50 years. Find the age of the youngest child.",
-            "opts": ["3 years", "4 years", "5 years", "6 years"],
-            "correct": 1,
-            "explanation": "Sum = x + (x+3) + (x+6) + (x+9) + (x+12) = 5x + 30 = 50 => x = 4 years."
+            "title": "Q52 [Ray Target Generation] - Sliding Ray Boundary Termination",
+            "desc": "In MoveGenerator.java, ray-casting for sliding pieces (Rook, Bishop, Queen) stops stepping along direction vector (dCol, dRow) when:",
+            "opts": [
+                "A) Ray reaches board edge (c < 0 || c > 7 || r < 0 || r > 7).",
+                "B) Ray steps 1 square.",
+                "C) Ray encounters a King.",
+                "D) Always steps 8 times."
+            ],
+            "correct": 0,
+            "explanation": "Sliding rays terminate as soon as target coordinates exit standard 8x8 board bounds."
         },
         {
-            "title": "Partnership - Capital Withdrawal (2024)",
-            "desc": "A and B invest ₹5,000 and ₹7,000. After 6 months A withdraws ₹2,000. If total yearly profit is ₹4,500, find B's share.",
-            "opts": ["₹2,400.00", "₹2,863.64", "₹3,100.50", "₹1,950.00"],
-            "correct": 1,
-            "explanation": "A ratio = 5000*6 + 3000*6 = 48,000. B ratio = 7000*12 = 84,000. Ratio = 4:7. B share = 7/11 * 4500 = ₹2,863.64."
+            "title": "Q53 [Ray Target Collision Termination] - Obstruction Ray Break",
+            "desc": "During ray target generation, why must target iteration break after encountering an occupying piece?",
+            "opts": [
+                "A) Sliding pieces cannot jump over or move through occupied squares.",
+                "B) Java loops overflow.",
+                "C) Target piece is destroyed.",
+                "D) Prevents castling bugs."
+            ],
+            "correct": 0,
+            "explanation": "A piece blocks sliding ray movement. Squares beyond an occupying piece are unreachable on that ray."
         },
         {
-            "title": "Boats & Streams - Downstream (2024)",
-            "desc": "A man can row 8 km/hr in still water. Speed of stream is 2 km/hr. Find time taken to row 30 km downstream.",
-            "opts": ["2.5 hours", "3 hours", "4 hours", "5 hours"],
-            "correct": 1,
-            "explanation": "Downstream speed = 8 + 2 = 10 km/hr. Time = 30 / 10 = 3 hours."
+            "title": "Q54 [Pinned Piece Mechanics] - Automated Check Filter",
+            "desc": "How does MoveGenerator naturally handle pinned pieces (a piece protecting its King from check)?",
+            "opts": [
+                "A) Simulating the pinned piece's move exposes King to enemy attack, causing isIllegal() to return true and discard the move.",
+                "B) Custom pin checking code.",
+                "C) Disabling pinned piece movement in Piece.java.",
+                "D) Marking pinned pieces red."
+            ],
+            "correct": 0,
+            "explanation": "Because every candidate move is validated via speculative simulation and check detection (isIllegal), moves that break a pin automatically fail legality validation."
         },
         {
-            "title": "Train Speed Problem (2024)",
-            "desc": "A train travels 360 km at a uniform speed. If speed had been 5 km/h faster, it would take 48 mins less. What is the speed?",
-            "opts": ["40 km/h", "45 km/h", "50 km/h", "55 km/h"],
-            "correct": 1,
-            "explanation": "Equation: 360/x - 360/(x+5) = 48/60 = 4/5. Solving quadratic yields x = 45 km/h."
+            "title": "Q55 [Deep Clone Board Consistency] - Cloned List Rebinding",
+            "desc": "In MoveGenerator.cloneBoard(), why are piece boardList references updated (`cloned.boardList = copy`)?",
+            "opts": [
+                "A) To bind cloned piece collision/hitting queries to the cloned list rather than active GUI pieces.",
+                "B) To increase rendering performance.",
+                "C) To allow multi-threaded drawing.",
+                "D) To enable image compression."
+            ],
+            "correct": 0,
+            "explanation": "Cloned pieces must evaluate collision methods (getHittingP) against the cloned list copy to avoid querying global GUI state GamePanel.simpieces."
         },
         {
-            "title": "Father and Son Ages (2024)",
-            "desc": "Sum of ages of father and son is 60 years. Father's age is four times that of his son. What are their current ages?",
-            "opts": ["Son: 10, Father: 50", "Son: 12, Father: 48", "Son: 15, Father: 45", "Son: 14, Father: 46"],
-            "correct": 1,
-            "explanation": "x + 4x = 60 => 5x = 60 => x = 12. Son = 12, Father = 48."
+            "title": "Q56 [En Passant Move Generation] - Captured Pawn Reference Pointer",
+            "desc": "How is an en passant candidate move captured in MoveGenerator.Move?",
+            "opts": [
+                "A) capturedPiece reference points to the adjacent enemy pawn being taken en passant.",
+                "B) capturedPiece is null.",
+                "C) Move type is set to CASTLE.",
+                "D) Row coordinate is set to -1."
+            ],
+            "correct": 0,
+            "explanation": "En passant captures an enemy pawn situated on an adjacent column rather than the destination square. capturedPiece correctly points to the captured adjacent pawn."
         },
         {
-            "title": "Time & Work - Worker Rate (2024)",
-            "desc": "If 5 workers complete a task in 20 days, how many days will 8 workers take for the same task?",
-            "opts": ["10 days", "12.5 days", "15 days", "16 days"],
-            "correct": 1,
-            "explanation": "Work = 5 × 20 = 100 worker-days. Days for 8 workers = 100 / 8 = 12.5 days."
+            "title": "Q57 [Promotion Flag in Move] - Pawn Terminal Rank Evaluation",
+            "desc": "In MoveGenerator.java, isPromotion flag evaluates to true when:",
+            "opts": [
+                "A) piece.type == PAWN AND destination toRow is rank 0 (White) or rank 7 (Black).",
+                "B) Any piece reaches row 0.",
+                "C) Queen takes King.",
+                "D) Minimax search completes."
+            ],
+            "correct": 0,
+            "explanation": "Pawn promotion triggers when a pawn reaches the terminal rank opposite its starting side."
         },
         {
-            "title": "Mixture Problem - Water Percentage (2024)",
-            "desc": "12L mixture (20% A) is mixed with 10L mixture (30% A). What is the percentage of water in new mixture?",
-            "opts": ["70.5%", "75.45%", "80.2%", "68.4%"],
-            "correct": 1,
-            "explanation": "Water in 1st = 9.6L. Water in 2nd = 7L. Total water = 16.6L out of 22L = (16.6/22)*100 = 75.45%."
+            "title": "Q58 [Performance Optimization in Legal Move Check] - Color Filter",
+            "desc": "Why does generateLegalMoves iterate only over pieces matching currentColor?",
+            "opts": [
+                "A) Opponent pieces cannot be moved on the current turn.",
+                "B) Opponent pieces have no movement logic.",
+                "C) Opponent pieces are hidden.",
+                "D) To reverse board perspective."
+            ],
+            "correct": 0,
+            "explanation": "Standard turn rules permit moving only friendly pieces belonging to the side whose turn it is."
         },
         {
-            "title": "Two Trains - Same Direction Passing (2024)",
-            "desc": "Two trains move in same direction at 50 kmph and 32 kmph. Slower train passenger sees faster train pass in 15s. Find faster train length.",
-            "opts": ["60 meters", "75 meters", "90 meters", "100 meters"],
-            "correct": 1,
-            "explanation": "Relative speed = 50 - 32 = 18 kmph = 5 m/s. Length = 5 m/s × 15s = 75 meters."
+            "title": "Q59 [Move Object Mutability] - Moved Flag Rollback",
+            "desc": "In MoveGenerator.Move, storing `prevMoved = piece.moved` allows the search engine to:",
+            "opts": [
+                "A) Restore exact moved state flag during move undo.",
+                "B) Check internet connectivity.",
+                "C) Display past moves on GUI panel.",
+                "D) Calculate FPS."
+            ],
+            "correct": 0,
+            "explanation": "If a piece had moved == false prior to test simulation, undoing the move must restore moved = false so castling or double-step rights remain valid."
         },
         {
-            "title": "Ratio Algebraic Expression (2024)",
-            "desc": "Find (7x + 4y) / (x - 2y) if x / 2y = 3 / 2.",
-            "opts": ["20", "25", "30", "15"],
-            "correct": 1,
-            "explanation": "x/2y = 3/2 => x = 3y. Substitute: (21y + 4y) / (3y - 2y) = 25y / y = 25."
+            "title": "Q60 [Castling Legality Verification] - Path Occupancy Check",
+            "desc": "Why does King.canMove() check intermediate square occupancy prior to returning true for castling?",
+            "opts": [
+                "A) Castling requires all squares between King and Rook to be completely clear of pieces.",
+                "B) Castling swaps piece colors.",
+                "C) Rooks cannot move horizontally.",
+                "D) To allow pawn promotion."
+            ],
+            "correct": 0,
+            "explanation": "Castling cannot be executed if any piece stands between the King and the target Rook."
         },
 
-        # 2024 Logical Reasoning Questions
+        # SECTION 5: GRAPH ALGORITHMS & BFS PATHFINDING ENGINE
         {
-            "title": "Number Series - Double Plus One (2024)",
-            "desc": "Find the next number: 2, 5, 11, 23, 47, ?",
-            "opts": ["90", "95", "96", "100"],
+            "title": "Q61 [Shortest Path Problem] - Unweighted Graph Shortest Path",
+            "desc": "What graph search algorithm is implemented in BFSPathFinder.java to find the minimum number of legal moves for a piece to reach a destination square?",
+            "opts": ["A) Depth-First Search (DFS)", "B) Breadth-First Search (BFS)", "C) A* Search", "D) Floyd-Warshall Algorithm"],
             "correct": 1,
-            "explanation": "Pattern: previous × 2 + 1. Next = 47 × 2 + 1 = 95."
+            "explanation": "Breadth-First Search (BFS) explores graph nodes layer-by-layer in order of distance from start, guaranteeing shortest path discovery in unweighted graphs."
         },
         {
-            "title": "Number Series - Odd Differences (2024)",
-            "desc": "Find the next number: 3, 8, 15, 24, 35, ?",
-            "opts": ["42", "48", "50", "52"],
+            "title": "Q62 [BFS Queue Structure] - FIFO Collection Implementation",
+            "desc": "What Java Collection interface/implementation powers the frontier node search in BFSPathFinder.java?",
+            "opts": [
+                "A) java.util.Stack",
+                "B) java.util.Queue implemented via java.util.LinkedList",
+                "C) java.util.TreeSet",
+                "D) java.util.HashMap"
+            ],
             "correct": 1,
-            "explanation": "Differences are 5, 7, 9, 11, 13. Next = 35 + 13 = 48."
+            "explanation": "BFS requires First-In, First-Out (FIFO) node processing, which is provided by Queue<Node> instantiated as LinkedList."
         },
         {
-            "title": "Letter Series - Plus 3 (2024)",
-            "desc": "Find the next letter: A, D, G, J, ?",
-            "opts": ["L", "M", "N", "O"],
-            "correct": 1,
-            "explanation": "Pattern: +3 letters. A(+3)->D(+3)->G(+3)->J(+3)->M."
-        },
-        {
-            "title": "Coding-Decoding - Plus 2 Shift (2024)",
-            "desc": "If 'TECHNOLOGY' is coded as 'VGEPQMQNA', how is 'COMPUTER' coded?",
-            "opts": ["DQNRVTFU", "EQORWVGT", "EPNQVUFS", "FQPSXWHU"],
-            "correct": 1,
-            "explanation": "Each letter shifted by +2. COMPUTER -> EQORWVGT."
-        },
-        {
-            "title": "Syllogism - Four Conclusions (2024)",
-            "desc": "Statements: 1. All green are blue, 2. All blue are white. Which follow?",
-            "opts": ["Only I follows", "Only I, II, and III follow", "All follow", "None follows"],
-            "correct": 1,
-            "explanation": "All green are blue -> Some blue are green. Combined: All green are white -> Some white/green follow. All white are blue does not follow."
-        },
-        {
-            "title": "Blood Relations - Mother Relation (2024)",
-            "desc": "Pointing to a man, a woman said, 'His mother is the only daughter of my mother.' How is the woman related to the man?",
-            "opts": ["Sister", "Mother", "Aunt", "Grandmother"],
-            "correct": 1,
-            "explanation": "Only daughter of woman's mother = woman herself. So she is his mother."
-        },
-        {
-            "title": "Direction Sense - Northeast (2024)",
-            "desc": "A person walks 5 km north, then 3 km east, then 2 km south. Distance and direction from starting point?",
-            "opts": ["5 km, North", "3√2 km, Northeast", "6 km, East", "4 km, Southeast"],
-            "correct": 1,
-            "explanation": "Net North = 3 km, Net East = 3 km. Distance = √(9+9) = 3√2 km Northeast."
-        },
-        {
-            "title": "Seating Arrangement - Row Middle (2024)",
-            "desc": "Five friends A, B, C, D, E sit in a row. A is not at end. B is right of A. C is at one end. D is between C and E. Who is in the middle?",
-            "opts": ["A", "E", "D", "B"],
-            "correct": 1,
-            "explanation": "Arrangement: A-B-E-D-C. Middle position is E."
-        },
-        {
-            "title": "Ordering & Ranking - Bottom Rank (2024)",
-            "desc": "In a class of 40 students, Ravi ranks 15th from the top. What is his rank from the bottom?",
-            "opts": ["25th", "26th", "27th", "24th"],
-            "correct": 1,
-            "explanation": "Rank from bottom = 40 - 15 + 1 = 26th."
-        },
-        {
-            "title": "Statement & Conclusions - Flowers (2024)",
-            "desc": "Statement: All roses are flowers. Some flowers are red. Conclusions: I) Some roses are red, II) All red things are flowers.",
-            "opts": ["Only I follows", "Neither I nor II follows", "Only II follows", "Both follow"],
-            "correct": 1,
-            "explanation": "Neither conclusion necessarily follows from the given statements."
-        },
-        {
-            "title": "Syllogism - Cats and Dogs Validity (2024)",
-            "desc": "All cats are animals. Some animals are dogs. Therefore, some cats are dogs. Is this conclusion valid?",
-            "opts": ["Valid", "Invalid conclusion", "Partially valid", "Cannot say"],
-            "correct": 1,
-            "explanation": "No direct link between cats and dogs is provided, so the conclusion is invalid."
-        },
-        {
-            "title": "Blood Relations - Girl Photograph (2024)",
-            "desc": "Pointing to a photograph, a man says, 'She is the daughter of my grandfather's only son.' How is the girl related to the man?",
-            "opts": ["Mother", "Sister", "Daughter", "Cousin"],
-            "correct": 1,
-            "explanation": "Grandfather's only son = father. Father's daughter = sister."
-        },
-        {
-            "title": "Number Series - Product Pattern (2024)",
-            "desc": "Find missing number: 2, 6, 12, 20, ?",
-            "opts": ["28", "30", "32", "36"],
-            "correct": 1,
-            "explanation": "n(n+1): 1*2=2, 2*3=6, 3*4=12, 4*5=20, 5*6=30."
-        },
-        {
-            "title": "Coding-Decoding - Reverse Word (2024)",
-            "desc": "If 'APPLE' is written as 'ELPPA', how is 'ORANGE' written?",
-            "opts": ["EGNARO", "EGNORA", "OEGARN", "RANOEG"],
+            "title": "Q63 [3D Visited Matrix State] - Promotion Reachability Dimension",
+            "desc": "In BFSPathFinder.java:\n    boolean[][][] visited = new boolean[8][8][2];\nWhat state does index visited[col][row][1] track?",
+            "opts": [
+                "A) Square (col, row) visited after pawn promotion to Queen.",
+                "B) Square (col, row) visited by Black pieces.",
+                "C) Square under attack by enemy King.",
+                "D) Square visited during castling."
+            ],
             "correct": 0,
-            "explanation": "Reverses the letters: ORANGE -> EGNARO."
+            "explanation": "Standard pawns move 1 square forward. Once promoted to a Queen on rank 0/7, movement capabilities change dramatically. Dimension [1] tracks post-promotion reachability."
+        },
+        {
+            "title": "Q64 [BFS Node Definition] - Backtracking Parent Pointers",
+            "desc": "A search node in BFSPathFinder stores (col, row, isPromoted, parent). What is the role of parent reference?",
+            "opts": [
+                "A) Points to predecessor Node in path, enabling backward reconstruction of shortest path from target back to start.",
+                "B) Points to King object.",
+                "C) Stores parent Java window frame.",
+                "D) References parent piece color."
+            ],
+            "correct": 0,
+            "explanation": "Each visited node maintains a link to the node that generated it (parent). Backtracking parent pointers reconstructs the path."
+        },
+        {
+            "title": "Q65 [BFS Promotion Transformation] - Dummy Queen Node Expansion",
+            "desc": "In BFSPathFinder.java, when a search node with isPromoted == true is polled, how does the algorithm test valid outgoing moves?",
+            "opts": [
+                "A) Uses a dummy Queen object (new Queen(color, col, row)) to compute sliding queen moves.",
+                "B) Keeps pawn 1-step move logic.",
+                "C) Uses Knight jump vectors.",
+                "D) Terminates search."
+            ],
+            "correct": 0,
+            "explanation": "Upon promotion, the piece assumes Queen movement capabilities. Creating a temporary Queen instance allows querying queen candidate moves."
+        },
+        {
+            "title": "Q66 [Path Order Correction] - Reversing Backtracked Path",
+            "desc": "Why does BFSPathFinder execute Collections.reverse(path) before returning the move list?",
+            "opts": [
+                "A) Reconstructive parent backtracking traverses from target square back to start node; reversing corrects order to start -> target.",
+                "B) BFS finds paths in reverse order of board ranks.",
+                "C) To flip Black piece paths.",
+                "D) Java lists require reverse sorting."
+            ],
+            "correct": 0,
+            "explanation": "Pointers trace backward (target -> parent -> parent ... -> start). Reversing yields natural forward routing."
+        },
+        {
+            "title": "Q67 [BFS Termination Condition] - Target Match or Queue Exhaustion",
+            "desc": "When does the BFS search loop stop scanning nodes?",
+            "opts": [
+                "A) When polled queue node matches target column and row (current.col == targetCol && current.row == targetRow), OR queue becomes empty.",
+                "B) After scanning 10 nodes.",
+                "C) When piece takes a King.",
+                "D) After 1 second timeout."
+            ],
+            "correct": 0,
+            "explanation": "Finding target coordinates terminates search immediately with optimal path. If queue empties without match, target square is unreachable."
+        },
+        {
+            "title": "Q68 [Graph Representation of Chessboard] - Vertices and Edges Modeling",
+            "desc": "In the BFS pathfinder, what components constitute graph vertices and edges?",
+            "opts": [
+                "A) Vertices = board squares (col, row, promotionState); Edges = legal moves allowed by piece.canMove().",
+                "B) Vertices = piece colors; Edges = captures.",
+                "C) Vertices = GUI panels; Edges = mouse clicks.",
+                "D) Vertices = search depths; Edges = minimax scores."
+            ],
+            "correct": 0,
+            "explanation": "Board state positions represent graph nodes (vertices), while valid piece moves connecting squares act as directed edges."
+        },
+        {
+            "title": "Q69 [BFS Time Complexity on Chess Grid] - Upper Bound Grid Complexity",
+            "desc": "For a fixed piece on an 8x8 board with max 128 reachability states, what is the upper bound complexity of BFS pathfinding?",
+            "opts": [
+                "A) O(V + E) where V <= 128 states and E <= 128 * 27 moves (Constant O(1) bounded runtime).",
+                "B) O(2^N) exponential complexity.",
+                "C) O(N!) factorial complexity.",
+                "D) O(N^3) cubic complexity."
+            ],
+            "correct": 0,
+            "explanation": "Because chess board size is fixed (8 * 8 * 2 = 128 max graph states), BFS executes in bounded time O(V+E) = O(1)."
+        },
+        {
+            "title": "Q70 [Pawn BFS Promotion Edge Case] - Single Step Rank 0 Promotion",
+            "desc": "If a White pawn starts at row 1 (b7) and target is b8 (row 0), how many steps does BFS return?",
+            "opts": ["A) 1 step (Point(1, 0)).", "B) 2 steps.", "C) 0 steps.", "D) Infinite loop."],
+            "correct": 0,
+            "explanation": "Single step forward reaches row 0 (b8), satisfying target check in 1 move."
+        },
+        {
+            "title": "Q71 [BFS State Space Isolation] - Preserving Outer Board State",
+            "desc": "During BFS search loops, why are original piece attributes (col, row, preCol, preRow, moved) stored before loop expansion and restored immediately after?",
+            "opts": [
+                "A) To prevent queue iteration from permanently mutating active piece position state.",
+                "B) To refresh GUI panel.",
+                "C) To force move redrawing.",
+                "D) To enable sound effects."
+            ],
+            "correct": 0,
+            "explanation": "Speculative evaluation mutates test properties. Preserving original values ensures outer application state remains unharmed."
+        },
+        {
+            "title": "Q72 [BFS vs DFS for Shortest Path] - Shortest Path Guarantee",
+            "desc": "Why is BFS preferred over DFS (Depth-First Search) for computing minimum move paths?",
+            "opts": [
+                "A) DFS can traverse deep unpromising paths indefinitely without guaranteeing shortest path discovery.",
+                "B) DFS uses more RAM than BFS.",
+                "C) DFS cannot process Java objects.",
+                "D) DFS works only on trees, not graphs."
+            ],
+            "correct": 0,
+            "explanation": "Unweighted shortest path finding requires BFS. DFS may find a path, but it is not guaranteed to be shortest."
+        },
+        {
+            "title": "Q73 [Unreachable Target Handling] - Empty Path Result",
+            "desc": "If a target square is completely blocked by friendly pieces, what does BFSPathFinder.findShortestPath() return?",
+            "opts": ["A) Empty list path (size 0).", "B) null.", "C) Throws exception.", "D) Returns start square."],
+            "correct": 0,
+            "explanation": "If queue exhausts without reaching target node, targetNode remains null and an empty list is returned."
+        },
+        {
+            "title": "Q74 [BFS Duplicate State Avoidance] - Visited Matrix Cycle Prevention",
+            "desc": "What prevents BFS from getting stuck in infinite loops between two adjacent squares (e.g. e2 -> e3 -> e2)?",
+            "opts": [
+                "A) visited[c][r][promoIdx] boolean array marks explored states and ignores re-visiting.",
+                "B) Thread timeout.",
+                "C) Maximum move counter limit.",
+                "D) King check detection."
+            ],
+            "correct": 0,
+            "explanation": "Marking nodes in visited matrix ensures each board state state is processed at most once."
+        },
+        {
+            "title": "Q75 [Start Position Identity Check] - Zero Distance Identity",
+            "desc": "If startCol == targetCol && startRow == targetRow in findShortestPath(), what is returned?",
+            "opts": ["A) Empty path list (0 moves required).", "B) 1 move path.", "C) Null reference.", "D) Error code."],
+            "correct": 0,
+            "explanation": "If starting square matches target, distance is zero; function returns empty path immediately."
         },
 
-        # 2024 Verbal Ability Questions
+        # SECTION 6: CLASSICAL AI ENGINE — MINIMAX & ALPHA-BETA PRUNING
         {
-            "title": "Reading Comprehension - AI Concerns (2024)",
-            "desc": "Passage: 'Artificial Intelligence has revolutionized industries... However, concerns about job displacement and ethical implications remain significant challenges.' What are the main concerns?",
-            "opts": ["High costs", "Job displacement and ethical implications", "Lack of memory", "Manual data entry"],
-            "correct": 1,
-            "explanation": "The passage highlights job displacement and ethical implications."
+            "title": "Q76 [Minimax Search Goal] - Adversarial Game Optimization",
+            "desc": "What is the fundamental optimization goal of the Minimax algorithm in turn-based 2-player zero-sum games like chess?",
+            "opts": [
+                "A) Maximize AI's score while assuming opponent plays optimal moves to minimize AI's score.",
+                "B) Pick moves completely at random.",
+                "C) Maximize material score of both players simultaneously.",
+                "D) Minimize game play duration to under 10 seconds."
+            ],
+            "correct": 0,
+            "explanation": "Minimax models zero-sum adversarial play: Maximizer attempts to maximize evaluation score, while Minimizer tries to minimize it."
         },
         {
-            "title": "Grammar - Neither Nor Rule (2024)",
-            "desc": "Choose the correct sentence:",
-            "opts": ["a) Neither the students nor the teacher were present", "b) Neither the students nor the teacher was present", "c) Neither the students or the teacher was present", "d) Neither student nor teachers was present"],
-            "correct": 1,
-            "explanation": "With 'neither...nor', verb agrees with closer subject ('teacher' is singular => 'was')."
+            "title": "Q77 [Alpha-Beta Pruning Purpose] - Branch Cutoff Efficiency",
+            "desc": "What efficiency benefit does Alpha-Beta Pruning bring to Minimax search?",
+            "opts": [
+                "A) Cuts off branch evaluations that cannot affect final decision, dramatically reducing searched nodes without altering minimax decision outcome.",
+                "B) Reduces position evaluation accuracy by 50%.",
+                "C) Replaces heuristic scoring with random selection.",
+                "D) Bypasses legal move validation checks."
+            ],
+            "correct": 0,
+            "explanation": "Alpha-Beta pruning returns identical mathematical results to full Minimax search while skipping evaluation of subtrees proven inferior to previously analyzed options."
         },
         {
-            "title": "Vocabulary - Synonyms: ABUNDANT (2024)",
-            "desc": "Find the synonym of 'ABUNDANT':",
-            "opts": ["a) Scarce", "b) Plentiful", "c) Limited", "d) Rare"],
-            "correct": 1,
-            "explanation": "Abundant means existing in large quantities ('Plentiful')."
+            "title": "Q78 [Alpha Parameter Meaning] - Maximizer Lower Bound",
+            "desc": "In Alpha-Beta Pruning, what does parameter alpha represent?",
+            "opts": [
+                "A) Maximum evaluation score guaranteed to Maximizing player so far along search path.",
+                "B) Minimum score of Minimizing player.",
+                "C) Current search tree depth.",
+                "D) Total count of evaluated nodes."
+            ],
+            "correct": 0,
+            "explanation": "Alpha tracks best lower-bound score Maximizer can guarantee. Any opponent move resulting in score < alpha will be rejected by Maximizer."
         },
         {
-            "title": "Vocabulary - Antonyms: TRANSPARENT (2024)",
-            "desc": "Find the antonym of 'TRANSPARENT':",
-            "opts": ["a) Clear", "b) Opaque", "c) Visible", "d) Bright"],
-            "correct": 1,
-            "explanation": "Transparent means see-through, so 'Opaque' is the antonym."
+            "title": "Q79 [Beta Parameter Meaning] - Minimizer Upper Bound",
+            "desc": "In Alpha-Beta Pruning, what does parameter beta represent?",
+            "opts": [
+                "A) Minimum evaluation score guaranteed to Minimizing player so far along search path.",
+                "B) Maximum score of Maximizing player.",
+                "C) Search thread priority.",
+                "D) Random seed value."
+            ],
+            "correct": 0,
+            "explanation": "Beta tracks best upper-bound score Minimizer can limit Maximizer to. Any move giving score > beta will be avoided by Minimizer."
         },
         {
-            "title": "Sentence Correction - Data Subject (2024)",
-            "desc": "Choose the correct sentence:",
-            "opts": ["a) The data are incorrect", "b) The data is incorrect", "c) The datas are incorrect", "d) Data were wrong"],
-            "correct": 1,
-            "explanation": "'The data is incorrect' is the standard modern usage."
+            "title": "Q80 [Cutoff Condition] - Pruning Abort Condition",
+            "desc": "Look at snippet from Minimax.java:\n    if (beta <= alpha) break;\nWhat condition triggers an Alpha-Beta cutoff (pruning)?",
+            "opts": ["A) beta <= alpha", "B) alpha > 1000", "C) depth == 1", "D) legalMoves.size() == 0"],
+            "correct": 0,
+            "explanation": "When beta <= alpha, current search branch is worse than a previously discovered branch for one player, so further exploration of this node is aborted (break)."
         },
         {
-            "title": "Vocabulary - Synonyms: EPHEMERAL (2024)",
-            "desc": "Choose the synonym for 'Ephemeral':",
-            "opts": ["a) Eternal", "b) Transient", "c) Permanent", "d) Perpetual"],
-            "correct": 1,
-            "explanation": "Ephemeral means short-lived or temporary ('Transient')."
-        },
-        # 2024 Technical Assessment Questions
-        {
-            "title": "C Programming Output - Increment Sequence (2024)",
-            "desc": "### Question\nWhat is the output of the following C code?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int x = 5;\n    printf(\"%d\", x++ + ++x);\n    return 0;\n}\n```",
-            "opts": ["10", "11", "12", "13"],
-            "correct": 2,
-            "explanation": "Note: Undefined behavior due to sequence point violations. In many standard C compilers, `x++` evaluates to 5 (x becomes 6), then `++x` increments x to 7 and evaluates to 7. Result: 5 + 7 = 12."
+            "title": "Q81 [Terminal Search Condition] - Base Case Recursion Termination",
+            "desc": "When does recursive method minimax() stop expanding child nodes and return a numeric evaluation?",
+            "opts": [
+                "A) When depth == 0 OR current board state has 0 legal moves (Checkmate / Stalemate).",
+                "B) When time reaches 1 second.",
+                "C) When Queen is captured.",
+                "D) When alpha equals beta."
+            ],
+            "correct": 0,
+            "explanation": "Reaching search depth limit (depth == 0) or game termination (no legal moves) triggers base-case position scoring."
         },
         {
-            "title": "Loop Output - Continue Statement (2024)",
-            "desc": "### Question\nWhat is the output of the following C loop?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int i;\n    for(i=0; i<5; i++) {\n        if(i == 3) continue;\n        printf(\"%d \", i);\n    }\n    return 0;\n}\n```",
-            "opts": ["0 1 2 3 4", "0 1 2 4", "0 1 2", "1 2 4"],
-            "correct": 1,
-            "explanation": "The loop prints 0, 1, and 2. When i == 3, the `continue` statement skips printing and jumps to increment. Then i = 4 is printed."
+            "title": "Q82 [Terminal Value for Checkmate] - Checkmate Penalty Constant",
+            "desc": "In Minimax.java, what score value is returned when Maximizer faces Checkmate (0 legal moves on Maximizer turn)?",
+            "opts": ["A) -100000 (Extremely negative penalty)", "B) +100000", "C) 0", "D) -10"],
+            "correct": 0,
+            "explanation": "Checkmate against Maximizer represents absolute defeat, encoded as extreme negative penalty (-100000)."
         },
         {
-            "title": "Array Pointer Manipulation (2024)",
-            "desc": "### Question\nWhat is the output of the following C program?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = arr;\n    printf(\"%d %d\", *(p+2), arr[3]);\n    return 0;\n}\n```",
-            "opts": ["2 3", "3 4", "3 5", "2 4"],
-            "correct": 1,
-            "explanation": "`p` points to arr[0]. `*(p+2)` evaluates to arr[2] = 3. `arr[3]` is 4. Output: `3 4`."
+            "title": "Q83 [Depth & Difficulty Scaling] - Search Depth Mapping",
+            "desc": "In AIPlayer.java, how do difficulty levels (Easy, Medium, Hard) map to Minimax search depth?",
+            "opts": [
+                "A) Easy = Depth 2, Medium = Depth 4, Hard = Depth 6.",
+                "B) Easy = Depth 10, Medium = Depth 5, Hard = Depth 1.",
+                "C) Easy = Random, Medium = Depth 1, Hard = Depth 2.",
+                "D) Depth is fixed at 3 for all levels."
+            ],
+            "correct": 0,
+            "explanation": "Search depth controls lookahead horizon. Higher depth explores exponential candidate move combinations, raising play difficulty."
         },
         {
-            "title": "Recursion Output - Factorial (2024)",
-            "desc": "### Question\nWhat is the output of the recursive function call `func(5)`?\n\n```c\nint func(int n) {\n    if(n <= 1) return 1;\n    return n * func(n-1);\n}\n```",
-            "opts": ["24", "120", "720", "60"],
-            "correct": 1,
-            "explanation": "Calculates factorial: 5 × 4 × 3 × 2 × 1 = 120."
+            "title": "Q84 [Move Ordering Benefit] - Early Bound Tightening",
+            "desc": "Why does pre-sorting legal moves (e.g. captures first) significantly improve Alpha-Beta Pruning efficiency?",
+            "opts": [
+                "A) Evaluating strong candidate moves early produces tight alpha / beta bounds sooner, maximizing pruned search branches.",
+                "B) Move sorting decreases memory usage.",
+                "C) Move sorting changes checkmate definitions.",
+                "D) It prevents draw offers."
+            ],
+            "correct": 0,
+            "explanation": "Alpha-Beta pruning achieves theoretical maximum efficiency O(B^(D/2)) when best moves are evaluated first in branch order."
         },
         {
-            "title": "Java Output - Pre & Post Increment (2024)",
-            "desc": "### Question\nWhat is the output of the following Java program?\n\n```java\npublic class Test {\n    public static void main(String[] args) {\n        int x = 10;\n        System.out.println(x++ + ++x);\n    }\n}\n```",
-            "opts": ["20", "21", "22", "24"],
-            "correct": 2,
-            "explanation": "In Java, evaluation is strictly left-to-right. `x++` evaluates to 10 (x becomes 11), then `++x` increments x to 12 and evaluates to 12. Output: 10 + 12 = 22."
+            "title": "Q85 [Minimax Evaluation Perspectivism] - Zero-Sum Polarity",
+            "desc": "In Minimax.java, how are evaluation scores interpreted for White vs Black?",
+            "opts": [
+                "A) Positive score favors White (Maximizer), negative score favors Black (Minimizer).",
+                "B) Positive score favors Black, negative favors White.",
+                "C) Score is always positive integer.",
+                "D) Score reflects move count."
+            ],
+            "correct": 0,
+            "explanation": "Zero-sum convention sets White as Maximizer (+infinity) and Black as Minimizer (-infinity)."
         },
         {
-            "title": "Python Output - Step Recursion (2024)",
-            "desc": "### Question\nWhat is the output of the following Python program?\n\n```python\ndef func(n):\n    if n <= 1:\n        return 1\n    return n * func(n-2)\n\nprint(func(6))\n```",
-            "opts": ["24", "48", "96", "120"],
-            "correct": 1,
-            "explanation": "`func(6)` = 6 × `func(4)` = 6 × (4 × `func(2)`) = 6 × 4 × (2 × `func(0)`) = 6 × 4 × 2 × 1 = 48."
+            "title": "Q86 [Tree Search Complexity] - Full Minimax Node visits",
+            "desc": "Without pruning, what is the time complexity of full Minimax search with branching factor B and depth D?",
+            "opts": ["A) O(B^D)", "B) O(B + D)", "C) O(D^2)", "D) O(log B)"],
+            "correct": 0,
+            "explanation": "Minimax traverses a uniform tree with B branches per level down D levels, requiring O(B^D) node visits."
         },
         {
-            "title": "Pointer Arithmetic Output (2024)",
-            "desc": "### Question\nWhat is the output of the following code snippet?\n\n```c\nint main() {\n    int arr[] = {10, 20, 30, 40, 50};\n    int *ptr = arr + 2;\n    printf(\"%d\", *(ptr+1));\n    return 0;\n}\n```",
-            "opts": ["20", "30", "40", "50"],
-            "correct": 2,
-            "explanation": "`arr + 2` points to arr[2] (30). `ptr + 1` moves pointer to arr[3] (40). De-referencing `*(ptr+1)` yields 40."
+            "title": "Q87 [Optimal Alpha-Beta Complexity] - Pruned Tree Complexity",
+            "desc": "With perfect move ordering, what is the reduced time complexity of Alpha-Beta Pruning search?",
+            "opts": [
+                "A) O(B^(D/2)) (Effectively doubling effective search depth for same computational budget).",
+                "B) O(B * D)",
+                "C) O(1)",
+                "D) O(D^B)"
+            ],
+            "correct": 0,
+            "explanation": "Optimal pruning cuts branching search exponent in half, allowing search depth to double in equal computation time."
         },
         {
-            "title": "String Operations - strlen (2024)",
-            "desc": "### Question\nWhat is the output of the following program?\n\n```c\nint main() {\n    char str[] = \"HELLO\";\n    printf(\"%d\", strlen(str));\n    return 0;\n}\n```",
-            "opts": ["4", "5", "6", "0"],
-            "correct": 1,
-            "explanation": "`strlen(\"HELLO\")` counts character length excluding null terminator, returning 5."
+            "title": "Q88 [Minimax Search State Isolation] - In-Place Mutation and Undo",
+            "desc": "Why does minimax() call applyMove() and undoMove() on a single board instance instead of generating new board objects at every node?",
+            "opts": [
+                "A) Mutating and restoring a single board list avoids generating millions of short-lived objects, avoiding severe Java GC performance overhead.",
+                "B) Java forbids allocating memory in loops.",
+                "C) Undo move runs faster than clone.",
+                "D) Both A and C."
+            ],
+            "correct": 3,
+            "explanation": "Modifying state in-place and undoing after recursive calls avoids massive object allocation churn and garbage collection pauses."
         },
         {
-            "title": "Pseudo Code - Value Swap (2024)",
-            "desc": "### Question\nWhat will be the output of the following pseudocode?\n\n```text\nBegin\n  Integer x = 10\n  Integer y = 5\n  x = x + y\n  y = x - y\n  x = x - y\n  Print x, y\nEnd\n```",
-            "opts": ["x = 10, y = 5", "x = 5, y = 10", "x = 15, y = 5", "x = 5, y = 5"],
-            "correct": 1,
-            "explanation": "Swaps values without temporary variable: x becomes 15, y becomes 10, x becomes 5. Final output: `x = 5, y = 10`."
+            "title": "Q89 [Transposition Table Concept] - Caching Board Positions",
+            "desc": "What optimization technique (often paired with Minimax) caches previously evaluated board positions via Zobrist hashing to prevent re-analyzing duplicate search transposition nodes?",
+            "opts": ["A) Transposition Table", "B) Binary Search Tree", "C) HashMap rendering", "D) Stack trace"],
+            "correct": 0,
+            "explanation": "Transposition tables store evaluation results of positions reached via different move orderings (transpositions), skipping duplicate subtree searches."
         },
         {
-            "title": "Networking - OSI Model Layer (2024)",
-            "desc": "Which layer of the OSI model is responsible for end-to-end communication and error-free delivery of data?",
-            "opts": ["a) Network Layer", "b) Transport Layer", "c) Session Layer", "d) Data Link Layer"],
-            "correct": 1,
-            "explanation": "The Transport layer (Layer 4) manages end-to-end flow control, error checking, and data delivery."
+            "title": "Q90 [Horizon Effect] - Premature Depth Truncation",
+            "desc": "What chess engine limitation occurs when Minimax depth limit cuts off search right before a major piece capture or tactical sequence completes?",
+            "opts": ["A) Horizon Effect", "B) Alpha Bleed", "C) Pruning Slip", "D) Memory Leak"],
+            "correct": 0,
+            "explanation": "The Horizon Effect occurs when depth limit cuts off search prematurely, misevaluating positions whose tactical resolution lies just beyond search depth limit."
         },
 
-        # 2025 Technical Assessment Questions
+        # SECTION 7: EVALUATION HEURISTICS & PIECE-SQUARE TABLES (PST)
         {
-            "title": "C Output - Post and Pre Increment Dual Printf (2025)",
-            "desc": "### Question\nWhat is the output of the following C program?\n\n```c\n#include <stdio>\n\nint main() {\n    int a = 5, b = 10;\n    printf(\"%d %d\", a++, ++b);\n    printf(\" %d %d\", a, b);\n    return 0;\n}\n```",
-            "opts": ["5 10 6 11", "5 11 6 11", "6 11 6 11", "5 11 5 11"],
-            "correct": 1,
-            "explanation": "`a++` uses 5 (then a=6), `++b` increments b to 11. First printf prints `5 11`. Second printf prints `6 11`."
-        },
-        {
-            "title": "Loop with Break Output (2025)",
-            "desc": "### Question\nWhat is the output of the following C program?\n\n```c\n#include <stdio.h>\n\nint main() {\n    int i;\n    for(i=1; i<=10; i++) {\n        if(i == 5) break;\n        printf(\"%d \", i);\n    }\n    return 0;\n}\n```",
-            "opts": ["1 2 3 4 5", "1 2 3 4", "1 2 3 4 5 6 7 8 9 10", "5"],
-            "correct": 1,
-            "explanation": "Prints 1 2 3 4. When i == 5, break terminates the loop."
-        },
-        {
-            "title": "Array and Pointer Indexing (2025)",
-            "desc": "### Question\nWhat is the output?\n\n```c\nint main() {\n    int arr[] = {10, 20, 30, 40};\n    int *p = arr;\n    printf(\"%d %d\", *p, *(p+3));\n    return 0;\n}\n```",
-            "opts": ["10 30", "10 40", "20 40", "10 20"],
-            "correct": 1,
-            "explanation": "`*p` is arr[0] = 10. `*(p+3)` is arr[3] = 40. Output: `10 40`."
-        },
-        {
-            "title": "Recursion - Natural Sum (2025)",
-            "desc": "### Question\nWhat is the output of `sum(5)`?\n\n```c\nint sum(int n) {\n    if(n == 0) return 0;\n    return n + sum(n-1);\n}\n```",
-            "opts": ["10", "15", "20", "25"],
-            "correct": 1,
-            "explanation": "Calculates 5 + 4 + 3 + 2 + 1 + 0 = 15."
-        },
-        {
-            "title": "Java Output - String Comparison (2025)",
-            "desc": "### Question\nWhat is the output of the following Java snippet?\n\n```java\npublic class Test {\n    public static void main(String[] args) {\n        String s1 = \"Hello\";\n        String s2 = new String(\"Hello\");\n        System.out.println(s1 == s2);\n        System.out.println(s1.equals(s2));\n    }\n}\n```",
-            "opts": ["true true", "false true", "true false", "false false"],
-            "correct": 1,
-            "explanation": "`==` checks reference equality (false because s2 is new object), `.equals()` checks string value equality (true)."
-        },
-        {
-            "title": "Python Output - Recursive List Sum (2025)",
-            "desc": "### Question\nWhat is the output of the following Python program?\n\n```python\ndef func(lst):\n    if len(lst) == 0:\n        return 0\n    return lst[0] + func(lst[1:])\n\nprint(func([1, 2, 3, 4]))\n```",
-            "opts": ["6", "10", "24", "0"],
-            "correct": 1,
-            "explanation": "Recursively sums list elements: 1 + 2 + 3 + 4 = 10."
-        },
-        {
-            "title": "Pointer Arithmetic - Negative Index (2025)",
-            "desc": "### Question\nWhat is the output?\n\n```c\nint main() {\n    int arr[] = {1, 2, 3, 4, 5};\n    int *p = &arr[2];\n    printf(\"%d %d\", p[-1], p[1]);\n    return 0;\n}\n```",
-            "opts": ["1 3", "2 4", "3 5", "2 3"],
-            "correct": 1,
-            "explanation": "`p` points to arr[2] (3). `p[-1]` accesses arr[1] = 2. `p[1]` accesses arr[3] = 4. Output: `2 4`."
-        },
-        {
-            "title": "Nested Loops - Right Triangle Pattern (2025)",
-            "desc": "### Question\nWhat is the output?\n\n```c\nint main() {\n    int i, j;\n    for(i=1; i<=3; i++) {\n        for(j=1; j<=i; j++) {\n            printf(\"%d\", j);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}\n```",
-            "opts": ["1\\n12\\n123", "123\\n123\\n123", "1\\n22\\n333", "321"],
+            "title": "Q91 [Board Evaluation Zero-Sum Metric] - Score Formula",
+            "desc": "How is overall board score calculated in BoardEvaluator.java?",
+            "opts": [
+                "A) Score = Sum(White Piece Values + Positional Bonuses) - Sum(Black Piece Values + Positional Bonuses)",
+                "B) Score = White Piece Count / Black Piece Count",
+                "C) Score = Total legal moves",
+                "D) Score = Game panel width"
+            ],
             "correct": 0,
-            "explanation": "Prints 1 on line 1, 12 on line 2, and 123 on line 3."
+            "explanation": "Board evaluation sums material and positional scores for White pieces and subtracts material and positional scores for Black pieces."
         },
         {
-            "title": "Abstract Reasoning - Shape Sequence (2025)",
-            "desc": "Identify the next shape in the sequence:\n**Circle, Square, Triangle, Circle, Square, ?**",
-            "opts": ["Circle", "Square", "Triangle", "Hexagon"],
-            "correct": 2,
-            "explanation": "Sequence repeats every 3 shapes (Circle, Square, Triangle). Next shape is Triangle."
-        },
-        {
-            "title": "Pseudo Code - Simple Addition (2025)",
-            "desc": "### Question\nWhat will be the output?\n\n```text\nBegin\n    Set A = 10\n    Set B = 20\n    Set C = A + B\n    Print C\nEnd\n```",
-            "opts": ["10", "20", "30", "1020"],
-            "correct": 2,
-            "explanation": "Prints C = 10 + 20 = 30."
-        },
-        {
-            "title": "Networking - Secure Protocol (2025)",
-            "desc": "Which of the following is a common protocol used for secure communication over the internet?",
-            "opts": ["a) HTTP", "b) FTP", "c) HTTPS", "d) SMTP"],
-            "correct": 2,
-            "explanation": "HTTPS (HyperText Transfer Protocol Secure) provides encrypted web communication."
-        },
-        {
-            "title": "Statement & Assumption - Assignment Deadline (2025)",
-            "desc": "Statement: 'All students must submit their assignments by Friday.' Assumption: Students are aware of the deadline. Is the assumption valid?",
-            "opts": ["Yes, the assumption is valid", "No, invalid", "Irrelevant", "Cannot say"],
+            "title": "Q92 [Centipawn System] - Integer Pawn Scale",
+            "desc": "In chess engines, what unit of value does integer 100 represent in BoardEvaluator.java?",
+            "opts": [
+                "A) Value equivalent to 1 standard Pawn (100 centipawns = 1.0 pawn material unit).",
+                "B) Value of 1 Queen.",
+                "C) 100 milliseconds execution time.",
+                "D) 100 percent win probability."
+            ],
             "correct": 0,
-            "explanation": "Valid assumption because instructions imply students are informed of the deadline."
+            "explanation": "Centipawn valuation scales 1 Pawn to 100 points, allowing granular integer point adjustments without floating-point math overhead."
         },
         {
-            "title": "Cause and Effect - Company Profits (2025)",
-            "desc": "Event 1: Company reported significant increase in profits. Event 2: Company launched a new product line. Relationship?",
-            "opts": ["Event 1 is cause, Event 2 is effect", "Event 2 is the cause, Event 1 is the effect", "Independent events", "Both are causes"],
-            "correct": 1,
-            "explanation": "Launching a new product line (Event 2) leads to profit increase (Event 1)."
+            "title": "Q93 [Piece Values in Engine] - Material Centipawn Weights",
+            "desc": "According to BoardEvaluator.java, what material values are assigned to pieces?",
+            "opts": [
+                "A) Pawn = 100, Knight = 320, Bishop = 330, Rook = 500, Queen = 900, King = 20000",
+                "B) Pawn = 10, Knight = 30, Bishop = 30, Rook = 50, Queen = 90, King = 100",
+                "C) Pawn = 1, Knight = 2, Bishop = 3, Rook = 4, Queen = 5, King = 6",
+                "D) Pawn = 50, Knight = 100, Bishop = 150, Rook = 200, Queen = 400, King = 1000"
+            ],
+            "correct": 0,
+            "explanation": "Standard classical engine material weights assign King an overwhelming value (20,000) so king safety overrides all material trades."
+        },
+        {
+            "title": "Q94 [Piece-Square Tables (PST) Purpose] - Positional Bonus Heuristics",
+            "desc": "What is the primary purpose of Piece-Square Tables in BoardEvaluator.java?",
+            "opts": [
+                "A) Provide positional bonuses/penalties based on piece placement on the 8x8 grid (e.g. rewarding knights controlling center, penalizing edge knights).",
+                "B) Render piece graphics textures.",
+                "C) Store move history strings.",
+                "D) Generate random AI delay."
+            ],
+            "correct": 0,
+            "explanation": "PST tables encode positional heuristics, encouraging pieces to occupy strategically advantageous squares (such as center squares d4, d5, e4, e5)."
+        },
+        {
+            "title": "Q95 [Knight PST Penalty for Rim Squares] - Edge Knight Mobility Penalty",
+            "desc": "Why do Knight PST matrix borders contain negative values like -50 or -40?",
+            "opts": [
+                "A) 'A knight on the rim is dim' — Knights on edge squares control far fewer squares (3-4) compared to center knights (8 squares).",
+                "B) Edge squares crash graphics rendering.",
+                "C) Edge knights cannot jump.",
+                "D) Edge squares belong to opponent."
+            ],
+            "correct": 0,
+            "explanation": "Centralized knights exert maximum board control over 8 squares, whereas edge knights have restricted mobility (3-4 target squares)."
+        },
+        {
+            "title": "Q96 [Pawn PST Advancement Incentives] - Promotion Push Reward",
+            "desc": "Why do Pawn PST values increase from row 6 to row 1 (e.g. 5, 10, 20, 50)?",
+            "opts": [
+                "A) Pawns closer to promotion ranks become vastly more dangerous and valuable positional assets.",
+                "B) Pawns move faster near rank 0.",
+                "C) Pawns change color.",
+                "D) Pawns protect King from rank 0."
+            ],
+            "correct": 0,
+            "explanation": "Advanced pawns threaten promotion to Queen, so PST heuristics reward pushing pawns towards opposite rank."
+        },
+        {
+            "title": "Q97 [King PST Opening vs Endgame] - King Safety Positioning",
+            "desc": "In BoardEvaluator.java, King PST rewards corner positions (g1/b1 = 20..30) and penalizes center positions (-50). What phase of chess does this PST model?",
+            "opts": [
+                "A) Opening and Middlegame (encouraging King to stay safe behind pawn shields via castling).",
+                "B) Endgame activation.",
+                "C) Pawn promotion.",
+                "D) Stalemate draw setup."
+            ],
+            "correct": 0,
+            "explanation": "During opening and middlegame phases, King safety requires staying sheltered on castled wing squares behind pawn shields."
+        },
+        {
+            "title": "Q98 [PST Perspective Flipping for Black] - Vertical Mirroring",
+            "desc": "Look at BoardEvaluator.java:\n    if (p.color == GamePanel.BLACK) row = 7 - row;\nWhy must row index be inverted to 7 - row when looking up PST values for Black pieces?",
+            "opts": [
+                "A) PST arrays are written from White's rank perspective (row 0 = rank 8); Black advances down the board, so row indexing must be vertically mirrored.",
+                "B) Black pieces move horizontally.",
+                "C) Black pieces start at row 0.",
+                "D) Java arrays flip for negative numbers."
+            ],
+            "correct": 0,
+            "explanation": "Because Black advances in opposite board direction, vertically mirroring array lookup applies symmetric positional evaluation to Black."
+        },
+        {
+            "title": "Q99 [Bishop Pair Bonus Concept] - Diagonal Coverage Compensation",
+            "desc": "Why do modern chess evaluation engines often add an extra +50 point bonus if a player retains both Bishops?",
+            "opts": [
+                "A) Two Bishops complement each other by controlling dark and light square diagonals simultaneously.",
+                "B) Bishops can castle.",
+                "C) Bishops move faster than queens.",
+                "D) Bishops double pawn values."
+            ],
+            "correct": 0,
+            "explanation": "Retaining both Bishops grants total coverage across all 64 dark and light squares."
+        },
+        {
+            "title": "Q100 [Evaluation Function Static Balance] - Symmetrical Position Equilibrium",
+            "desc": "If both players have identical material and symmetrical piece placement, what value does BoardEvaluator.evaluate() return?",
+            "opts": ["A) 0 (Neutral equal position balance).", "B) +100", "C) -100", "D) 20000"],
+            "correct": 0,
+            "explanation": "Zero-sum scoring subtracts Black total score from White total score. Equal positions yield score of 0."
+        },
+
+        # SECTION 8: GENERATIVE AI COACH & LLM INTEGRATION (GROQ & OLLAMA)
+        {
+            "title": "Q101 [Architecture of AI Coach] - Desktop App REST Client",
+            "desc": "How does AICoach.java integrate Generative AI coaching into the Java desktop chess app?",
+            "opts": [
+                "A) Invokes REST HTTP POST calls using native java.net.HttpURLConnection to cloud/local LLM APIs and displays text response on GUI.",
+                "B) Embeds Python runtime interpreter inside JVM.",
+                "C) Runs C++ binary via JNI.",
+                "D) Hardcodes 1000 chess advice strings."
+            ],
+            "correct": 0,
+            "explanation": "AICoach acts as an HTTP REST client sending JSON payloads containing game context to LLM API endpoints and rendering advice strings."
+        },
+        {
+            "title": "Q102 [Primary Cloud API Provider] - Ultra-Low Latency Groq API",
+            "desc": "What cloud service and model endpoint does AICoach query when GROQ_API_KEY environment variable is available?",
+            "opts": [
+                "A) Groq Cloud API (https://api.groq.com/openai/v1/chat/completions) running model llama-3.1-8b-instant.",
+                "B) OpenAI GPT-4 API.",
+                "C) Google Gemini Pro API.",
+                "D) AWS Bedrock API."
+            ],
+            "correct": 0,
+            "explanation": "AICoach targets Groq Cloud API for ultra-fast (~0.15s response latency) LLM inference running llama-3.1-8b-instant."
+        },
+        {
+            "title": "Q103 [Local Ollama Fallback] - Offline Port 11434 Fallback",
+            "desc": "If GROQ_API_KEY is missing or unconfigured, what local endpoint URL does AICoach query?",
+            "opts": [
+                "A) http://localhost:11434/api/generate (Local Ollama server running qwen3:8b).",
+                "B) http://localhost:8080/api/chess",
+                "C) https://ollama.com/api",
+                "D) http://127.0.0.1:3000"
+            ],
+            "correct": 0,
+            "explanation": "Ollama exposes a local REST API on port 11434. AICoach POSTs prompt payloads to /api/generate for zero-cost offline AI advice."
+        },
+        {
+            "title": "Q104 [API Key Configuration Sources] - Environment and .env Cascade",
+            "desc": "Where does AICoach attempt to resolve the GROQ_API_KEY credential?",
+            "opts": [
+                "A) System.getenv(\"GROQ_API_KEY\"), and if null/empty, reads key line from local .env configuration file.",
+                "B) Windows Registry only.",
+                "C) Command line prompt user input.",
+                "D) Scrapes key from web."
+            ],
+            "correct": 0,
+            "explanation": "Checking OS environment variables followed by local .env file parsing supports flexible deployment setups across CLI and IDEs."
+        },
+        {
+            "title": "Q105 [JSON Escape Helper Function] - Escape String Sanitization",
+            "desc": "Look at snippet from AICoach.java:\n    private static String escapeJson(String raw) {\n        return raw.replace(\"\\\\\", \"\\\\\\\\\").replace(\"\\\"\", \"\\\\\\\"\").replace(\"\\n\", \"\\\\n\");\n    }\nWhat issue does escapeJson() prevent when constructing raw JSON payloads?",
+            "opts": [
+                "A) Strips unescaped double quotes and line breaks that would break JSON grammar syntax and trigger HTTP 400 Bad Request error.",
+                "B) Encrypts API token.",
+                "C) Translates English prompt to French.",
+                "D) Removes HTML tags."
+            ],
+            "correct": 0,
+            "explanation": "Payload strings containing unescaped quote marks or carriage returns produce invalid JSON syntax. Escaping special characters produces valid payloads."
+        },
+        {
+            "title": "Q106 [HTTP Connection Timeouts] - Read/Connect Socket Timeouts",
+            "desc": "Why does AICoach set explicit timeouts (`conn.setConnectTimeout(4000); conn.setReadTimeout(6000);`)?",
+            "opts": [
+                "A) Prevents HTTP requests from hanging indefinitely if network connection drops or LLM server freezes.",
+                "B) Speed up LLM inference time.",
+                "C) Mandated by Swing.",
+                "D) Saves API costs."
+            ],
+            "correct": 0,
+            "explanation": "Network calls without timeouts risk hanging threads indefinitely if endpoints fail to respond."
+        },
+        {
+            "title": "Q107 [LLM Response Extraction] - Zero-Dependency Substring Parser",
+            "desc": "How does AICoach extract generated text advice from Groq REST JSON response string without external libraries?",
+            "opts": [
+                "A) Searches substring markers (\"content\":\"\") and extracts content enclosed between response quotes.",
+                "B) Uses Regex compiler.",
+                "C) Calls Jackson ObjectMapper.",
+                "D) Converts response bytes to PNG image."
+            ],
+            "correct": 0,
+            "explanation": "To remain lightweight without external library dependencies, lightweight substring extraction parses text between JSON keys."
+        },
+        {
+            "title": "Q108 [Prompt Engineering Constraints] - Strict Token & Word Bounds",
+            "desc": "In AICoach.java, the prompt requests:\n    \"You are a Master Chess Coach. Give a 1-sentence tactical tip under 12 words for this move: ...\"\nWhy are strict token limits (max_tokens = 35, 12 words) enforced in prompt engineering?",
+            "opts": [
+                "A) Ensures advice fits neatly on Swing GUI overlay panel.",
+                "B) Ollama cannot generate more than 12 words.",
+                "C) To decrease Groq API costs.",
+                "D) Both A and C."
+            ],
+            "correct": 3,
+            "explanation": "Short prompt constraints keep UI display clean, lower generation latency, and minimize API token usage."
+        },
+        {
+            "title": "Q109 [Exception Handling in HTTP Thread] - Network Failure Catch Block",
+            "desc": "In AICoach.java, if network fails or Ollama is not running, what advice text displays on GUI?",
+            "opts": [
+                "A) \"Coach: Set GROQ_API_KEY or run Ollama\"",
+                "B) Application crashes with RuntimeException.",
+                "C) Black screen.",
+                "D) \"Coach: You win!\""
+            ],
+            "correct": 0,
+            "explanation": "Exception catch blocks handle network failures gracefully by displaying clear configuration guidance on the coach HUD."
+        },
+        {
+            "title": "Q110 [Asynchronous UI Update Mechanism] - Volatile Canvas Repaint Binding",
+            "desc": "When background thread fetches LLM advice string successfully, how is GUI updated?",
+            "opts": [
+                "A) Mutates static variable coachAdvice, which next 60 FPS repaint loop automatically renders onto canvas.",
+                "B) Reboots application.",
+                "C) Sends email notification.",
+                "D) Force redraws desktop monitor."
+            ],
+            "correct": 0,
+            "explanation": "The panel continuously repaints at 60 FPS, reading updated coachAdvice string seamlessly without blocking main game loop."
+        },
+
+        # SECTION 9: BUILD SYSTEMS, TESTING & DEPLOYMENT PIPELINE
+        {
+            "title": "Q111 [Build Automation Scripts] - PowerShell run.ps1 Script",
+            "desc": "What compilation script is provided in the repository for single-command Windows PowerShell execution?",
+            "opts": ["A) run.ps1", "B) build.xml", "C) pom.xml", "D) Makefile"],
+            "correct": 0,
+            "explanation": "run.ps1 automates invoking javac, copying image assets to bin/, and executing the compiled main Java class chess.chess."
+        },
+        {
+            "title": "Q112 [Java Compiler Flags] - Destination Bytecode Directory",
+            "desc": "In run.ps1, the command executed is:\n    javac -d bin -sourcepath src src/chess/*.java src/piece/*.java\nWhat does the -d bin flag specify?",
+            "opts": [
+                "A) Destination directory where compiled .class bytecode output files are placed.",
+                "B) Java debug level 2.",
+                "C) Delete source code after compilation.",
+                "D) Download dependencies."
+            ],
+            "correct": 0,
+            "explanation": "-d instructs javac to store compiled bytecode (.class) files into the specified directory (bin)."
+        },
+        {
+            "title": "Q113 [Unit Test Suites in Repository] - Graph Pathfinder Unit Test",
+            "desc": "Which unit test class in src/chess/ specifically tests graph pathfinder shortest path calculations?",
+            "opts": ["A) TestBFS.java", "B) TestCastling.java", "C) TestCastlePlace.java", "D) TestAI.java"],
+            "correct": 0,
+            "explanation": "TestBFS.java instantiates pieces and asserts that BFSPathFinder.findShortestPath() returns correct move step sequences."
+        },
+        {
+            "title": "Q114 [Classpath Execution Flag] - JVM Runtime Classpath Lookup",
+            "desc": "When launching the compiled application via `java -cp bin chess.chess`, what does -cp bin define?",
+            "opts": [
+                "A) Classpath lookup directory where JVM searches for compiled classes and resources.",
+                "B) Compiler optimization flag.",
+                "C) CPU core allocation limit.",
+                "D) Copy file permission."
+            ],
+            "correct": 0,
+            "explanation": "-cp (or -classpath) tells the Java Virtual Machine where to find compiled .class files and package resources at runtime."
+        },
+        {
+            "title": "Q115 [Environment Variable Overrides] - System getenv Priority",
+            "desc": "If .env file contains GROQ_API_KEY=xyz and OS environment has GROQ_API_KEY=abc, which value takes priority in AICoach.java?",
+            "opts": [
+                "A) System.getenv(\"GROQ_API_KEY\") (abc) because OS environment variables are checked prior to reading .env.",
+                "B) .env file value (xyz).",
+                "C) Random selection.",
+                "D) Triggers compile error."
+            ],
+            "correct": 0,
+            "explanation": "AICoach queries System.getenv() first. If present and non-empty, it uses that value immediately without opening .env."
+        },
+
+        # SECTION 10: SYSTEM DESIGN & MULTIPLAYER SCALING ARCHITECTURE
+        {
+            "title": "Q116 [System Design — Real-time Multiplayer] - Full-Duplex Low Latency Protocol",
+            "desc": "If converting this desktop game into an online real-time web application, what protocol is best suited for bidirectional low-latency move transmission between players?",
+            "opts": ["A) WebSockets (ws:// or wss://)", "B) HTTP GET Polling every 10 seconds", "C) SMTP Mail transfer", "D) FTP File Transfer"],
+            "correct": 0,
+            "explanation": "WebSockets provide persistent full-duplex TCP communication channels, allowing game servers to push opponent moves instantly with minimal latency (<10ms)."
+        },
+        {
+            "title": "Q117 [System Design — Game State Representation] - FEN Notation Compression",
+            "desc": "How should chess board state be transmitted over WebSocket frames between Client and Server?",
+            "opts": [
+                "A) Compact FEN (Forsyth-Edwards Notation) strings or PGN (Portable Game Notation) move strings.",
+                "B) Sending full raw pixel screenshot buffers.",
+                "C) Transmitting serialized Java BufferedImage byte streams.",
+                "D) Sending raw SQL queries."
+            ],
+            "correct": 0,
+            "explanation": "FEN strings represent complete board positions in ~80 characters of plain text, minimizing network payload bandwidth."
+        },
+        {
+            "title": "Q118 [System Design — Server-Side Validation] - Authoritative Move Validation",
+            "desc": "In a secure online multiplayer chess platform, where MUST move legality (King check, castling, en passant) be validated?",
+            "opts": [
+                "A) Strictly on the authoritative central backend server to prevent client-side cheat injection or modified code tampering.",
+                "B) Exclusively in the user's browser via JavaScript.",
+                "C) On the database indexer.",
+                "D) Move validation is unnecessary online."
+            ],
+            "correct": 0,
+            "explanation": "Never trust the client. A malicious user could hack client-side code to bypass move checks. Authoritative validation must run on the backend server."
+        },
+        {
+            "title": "Q119 [System Design — Database Schema] - Relational Match Schema",
+            "desc": "Which database model is best suited for storing user accounts, Elo ratings, match history, and PGN move records?",
+            "opts": [
+                "A) Relational Database (PostgreSQL / MySQL) with tables for users, matches, and moves.",
+                "B) Raw text files on desktop.",
+                "C) In-memory array list.",
+                "D) DNS record TXT fields."
+            ],
+            "correct": 0,
+            "explanation": "Relational databases ensure ACID compliance, structured indexing for user leaderboards, foreign key integrity, and transactional match records."
+        },
+        {
+            "title": "Q120 [System Design — Matchmaking Queues] - Redis Sorted Sets Matchmaking",
+            "desc": "What system component handles pairing active online players of similar Elo rating skills in real-time?",
+            "opts": [
+                "A) Matchmaking Service using Redis Sorted Sets (ZSET) or Queue workers.",
+                "B) Static HTML files.",
+                "C) Minimax search tree.",
+                "D) Java Swing EDT."
+            ],
+            "correct": 0,
+            "explanation": "In-memory data structures like Redis Sorted Sets allow instant ranking lookups and low-latency player matchmaking by rating range."
+        },
+
+        # SECTION 11: LLM SYSTEM ARCHITECTURE & AI TRADE-OFFS
+        {
+            "title": "Q121 [Cloud vs Local LLM Trade-off — Latency] - Cloud LPU vs Local Hardware",
+            "desc": "How does cloud API inference (Groq) compare to local LLM inference (Ollama) in latency performance?",
+            "opts": [
+                "A) Groq cloud hardware (LPU accelerators) processes tokens at ultra-high speed (~0.15s), whereas local consumer GPUs/CPUs take 1-4 seconds per response.",
+                "B) Ollama local runs 100x faster than cloud servers.",
+                "C) Both have identical response latency.",
+                "D) Cloud APIs always fail."
+            ],
+            "correct": 0,
+            "explanation": "Cloud providers use dedicated high-bandwidth AI hardware (LPUs/GPUs), delivering sub-second response times compared to consumer hardware."
+        },
+        {
+            "title": "Q122 [Cloud vs Local LLM Trade-off — Privacy & Cost] - Offline Zero-Cost Advantage",
+            "desc": "What is the primary operational advantage of running Ollama locally over cloud LLM APIs?",
+            "opts": [
+                "A) $0 API cost and 100% data privacy (game prompts never leave the local machine).",
+                "B) 10x higher parameter count.",
+                "C) Infinite context length.",
+                "D) Zero RAM usage."
+            ],
+            "correct": 0,
+            "explanation": "Local models run entirely on user hardware, incurring zero third-party API billing costs and ensuring total privacy without internet dependency."
+        },
+        {
+            "title": "Q123 [Model Quantization Concept] - 4-bit Weight Quantization",
+            "desc": "Local Ollama runs models like qwen3:8b using 4-bit quantization (e.g. Q4_K_M). What does quantization accomplish?",
+            "opts": [
+                "A) Compresses 16-bit floating point model weights down to 4-bit representations, reducing VRAM/RAM footprint from ~16GB to ~5GB with minimal intelligence loss.",
+                "B) Speeds up internet connection speed.",
+                "C) Increases model parameter count.",
+                "D) Converts Java code to C++."
+            ],
+            "correct": 0,
+            "explanation": "Quantization maps model weights to lower-bit precision, dramatically cutting memory requirements and enabling large LLMs to run on consumer laptops."
+        },
+        {
+            "title": "Q124 [Context Window Optimization] - Prompt Token Reduction",
+            "desc": "Why is the move description passed to the LLM formatted as a short text string (e.g., \"White Knight moved to f3\")?",
+            "opts": [
+                "A) Minimizes prompt token count, decreasing LLM generation latency and reducing API token costs.",
+                "B) Because LLMs cannot read chess board notation.",
+                "C) Swing limits text length to 20 characters.",
+                "D) To prevent SQL injection."
+            ],
+            "correct": 0,
+            "explanation": "Concise, targeted prompts keep token processing minimal, leading to near-instant advice generation."
+        },
+        {
+            "title": "Q125 [Streaming vs Non-Streaming LLM Responses] - Server-Sent Events Token Chunks",
+            "desc": "In AICoach.java, stream: false is configured for Ollama JSON payloads. What would stream: true enable?",
+            "opts": [
+                "A) Server sends generated tokens incrementally via Server-Sent Events (SSE), allowing UI to stream text character-by-character as it is produced.",
+                "B) Video streaming of chess games.",
+                "C) Multi-player WebSocket streaming.",
+                "D) Fast forward move playback."
+            ],
+            "correct": 0,
+            "explanation": "Streaming delivers token chunks in real-time as the LLM generates them, providing an interactive typing effect on screen."
+        },
+
+        # SECTION 12: CLASSICAL AI VS MODERN CHESS ENGINES
+        {
+            "title": "Q126 [Board Representation — Objects vs Bitboards] - 64-bit Bitmask Performance",
+            "desc": "This application uses ArrayList<Piece> object instances. What board representation do world-class engines like Stockfish use for maximum performance?",
+            "opts": [
+                "A) Bitboards (64-bit long integers representing piece locations as bitmasks).",
+                "B) 3D Graphics textures.",
+                "C) JSON strings.",
+                "D) Linked lists of strings."
+            ],
+            "correct": 0,
+            "explanation": "Bitboards map chess boards to 64-bit integers. Bitwise operations (AND, OR, XOR, bit shifts) execute move generation and attack ray calculation in single CPU instructions."
+        },
+        {
+            "title": "Q127 [Engine Architecture — Minimax vs Neural Networks] - MCTS Deep Learning vs Heuristic Minimax",
+            "desc": "How does this classical Minimax + PST engine differ from modern Deep Learning engines like AlphaZero or Stockfish NNUE?",
+            "opts": [
+                "A) Minimax relies on hand-crafted evaluation functions and explicit tree depth search, whereas AlphaZero uses Monte Carlo Tree Search (MCTS) with Deep Neural Networks trained via self-play.",
+                "B) AlphaZero uses Java Swing.",
+                "C) Minimax engines evaluate 1 billion positions per second on CPU.",
+                "D) There is no functional difference."
+            ],
+            "correct": 0,
+            "explanation": "Classical engines use hardcoded human heuristics and minimax trees, whereas neural engines evaluate positional quality through deep neural network inference."
+        },
+        {
+            "title": "Q128 [Zobrist Hashing Concept] - XOR Position Hashing",
+            "desc": "What is Zobrist Hashing used for in advanced chess engine implementation?",
+            "opts": [
+                "A) Generating unique 64-bit hash keys for board positions via bitwise XOR operations, enabling fast Transposition Table lookups and 3-fold repetition detection.",
+                "B) Encrypting user passwords.",
+                "C) Rendering piece sprites.",
+                "D) Formatting PGN files."
+            ],
+            "correct": 0,
+            "explanation": "Zobrist hashing assigns pseudo-random 64-bit numbers to piece-square combinations, allowing instant position hash updates via bitwise XOR."
+        },
+        {
+            "title": "Q129 [Quiescence Search Concept] - Tactical Exchange Horizon Resolution",
+            "desc": "What search enhancement extends Minimax tree evaluation beyond depth limit specifically for tactical capture sequences to eliminate the Horizon Effect?",
+            "opts": [
+                "A) Quiescence Search (evaluating only quiet, non-capture positions before returning static score).",
+                "B) Depth resetting.",
+                "C) Random move selection.",
+                "D) Piece deletion."
+            ],
+            "correct": 0,
+            "explanation": "Quiescence Search continues evaluating tactical captures until a 'quiet' board state is reached, ensuring search depth doesn't terminate mid-tactical exchange."
+        },
+        {
+            "title": "Q130 [Iterative Deepening Concept] - Progressive Search Horizon Management",
+            "desc": "How does Iterative Deepening improve Minimax engine search management?",
+            "opts": [
+                "A) Runs Minimax progressively at Depth 1, then Depth 2, Depth 3, etc., allowing time-bounded engines to return the best move found from the deepest completed iteration.",
+                "B) Repeats move generation 100 times.",
+                "C) Increases piece movement speed.",
+                "D) Clears RAM memory."
+            ],
+            "correct": 0,
+            "explanation": "Iterative Deepening guarantees that if search time runs out mid-way through depth 6, the complete best move result from depth 5 is returned instantly."
+        },
+
+        # SECTION 13: PROJECT PITCH, BEHAVIORAL & TECHNICAL TRADE-OFFS
+        {
+            "title": "Q131 [Project Technology Selection] - Technical Desktop Justification",
+            "desc": "In a technical interview, how should you justify choosing Java Swing over web technologies (React/Node) for this project?",
+            "opts": [
+                "A) 'Java Swing provides direct native JVM desktop execution, low memory overhead, standalone desktop deployment without browser engine overhead, and straightforward multithreading concurrency primitives.'",
+                "B) 'Web technologies do not support chess games.'",
+                "C) 'Java Swing is the newest UI framework available.'",
+                "D) 'Swing handles AI search automatically.'"
+            ],
+            "correct": 0,
+            "explanation": "A strong technical pitch highlights JVM performance, zero external framework overhead, multi-threading controls, and self-contained desktop deployment."
+        },
+        {
+            "title": "Q132 [Technical Challenge Handling] - Speculative Simulation Engineering",
+            "desc": "If asked about the hardest technical challenge faced during development, which aspect of the codebase represents the most complex engineering achievement?",
+            "opts": [
+                "A) 'Implementing check safety move validation during move generation, preventing illegal moves by speculatively simulating candidate moves on cloned board states and verifying King safety.'",
+                "B) Loading PNG images.",
+                "C) Setting window titles.",
+                "D) Changing background colors."
+            ],
+            "correct": 0,
+            "explanation": "Speculative move simulation, move rollback integrity, and non-blocking check verification form the most mathematically intricate logic in the game engine."
+        },
+        {
+            "title": "Q133 [Performance Profiling & Bottlenecks] - Allocations Profiling & Bitboard Optimization",
+            "desc": "If AI search at Depth 6 causes UI stutter, what profiling tool and optimization strategy would you explain to an interviewer?",
+            "opts": [
+                "A) 'Use Java VisualVM / JProfiler to trace garbage collection allocations; optimize by replacing object allocations with primitive array bitboards and in-place move mutation.'",
+                "B) Re-install Windows.",
+                "C) Add more Thread.sleep() calls.",
+                "D) Reduce screen resolution."
+            ],
+            "correct": 0,
+            "explanation": "Profiling tools (VisualVM, JProfiler) pinpoint CPU hot spots and memory allocation churn, guiding low-level algorithmic optimizations."
+        },
+        {
+            "title": "Q134 [Feature Extensibility] - SOLID Open/Closed Principle",
+            "desc": "How does the abstract base class design (Piece.java) satisfy the Open/Closed Principle (Solid Principles)?",
+            "opts": [
+                "A) Code is Open for extension (new custom fairy chess pieces like 'Archbishop' can be added by extending Piece) and Closed for modification (existing piece classes remain untouched).",
+                "B) Code requires editing base Piece class for every edit.",
+                "C) Code disables subclassing.",
+                "D) Code uses public global variables everywhere."
+            ],
+            "correct": 0,
+            "explanation": "Extending Piece allows adding brand new piece movement behaviors without altering or risking breaking existing piece implementations."
+        },
+        {
+            "title": "Q135 [Core Personal Takeaway] - Decoupled Architecture Lesson",
+            "desc": "What is the single most important system architectural lesson learned from building this end-to-end Chess & AI Engine project?",
+            "opts": [
+                "A) Decoupling core domain logic (move generator, evaluator, game rules) from UI rendering and background AI processing enables clean, maintainable, and extensible software architecture.",
+                "B) Monolithic single-file applications run faster.",
+                "C) Threading is unnecessary in game development.",
+                "D) LLMs can replace all chess rules engines."
+            ],
+            "correct": 0,
+            "explanation": "Separating rendering, business logic, graph pathfinding, and AI models adheres to separation of concerns, delivering clean maintainable architecture."
         }
     ]
 
@@ -1074,6 +1983,7 @@ def _seed_placement_mcqs(count: int):
             "description": t["desc"],
             "options": t["opts"],
             "correct_option": t["correct"],
+            "explanation": t["explanation"],
             "difficulty": "Medium",
             "is_placement": True,
             "created_at": datetime.now(timezone.utc).isoformat()
@@ -1081,7 +1991,7 @@ def _seed_placement_mcqs(count: int):
 
     if items_to_add:
         col.insert_many(items_to_add)
-        print(f"[questions] Seeded {len(items_to_add)} 2025 placement MCQs into MongoDB.")
+        print(f"[questions] Seeded {len(items_to_add)} Chess AI & Application MCQs into MongoDB.")
 
 
 def _seed_placement_coding(count: int):

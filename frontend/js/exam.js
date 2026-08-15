@@ -24,7 +24,7 @@ let userState = {
   timerInterval: null
 };
 
-let testMode = "full"; // "mcq", "coding", or "full"
+let testMode = "full"; // "mcq", "coding", "resume", or "full"
 
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -40,6 +40,13 @@ async function initExam() {
     document.getElementById("tab-coding").style.display = "none";
     document.getElementById("coding-palette-container")?.style.setProperty("display", "none", "important");
     userState.timeRemainingSeconds = 40 * 60; // 40 mins for MCQ test
+    switchTab("mcq");
+  } else if (testMode === "resume") {
+    document.getElementById("tab-coding").style.display = "none";
+    document.getElementById("coding-palette-container")?.style.setProperty("display", "none", "important");
+    userState.timeRemainingSeconds = 60 * 60; // 60 mins for Resume MCQ test
+    const tabMcqLabel = document.querySelector("#tab-mcq span:first-child");
+    if (tabMcqLabel) tabMcqLabel.textContent = "📄 Resume & AI Engine MCQs";
     switchTab("mcq");
   } else if (testMode === "coding") {
     document.getElementById("tab-mcq").style.display = "none";
@@ -61,7 +68,7 @@ async function initExam() {
 
 async function fetchPlacementQuestions() {
   try {
-    const res = await fetch(`${API_BASE}/questions/placement`);
+    const res = await fetch(`${API_BASE}/questions/placement?mode=${testMode}`);
     if (!res.ok) throw new Error("Failed to fetch placement exam payload");
     const data = await res.json();
     
