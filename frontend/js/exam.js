@@ -74,9 +74,8 @@ async function fetchPlacementQuestions() {
     
     examData.mcqs = data.mcq_questions || [];
     examData.coding = data.coding_questions || [];
-    examData.durationMinutes = data.duration_minutes || 60;
-
-    if (testMode === "full") userState.timeRemainingSeconds = examData.durationMinutes * 60;
+    examData.durationMinutes = data.duration_minutes || (testMode === "coding" ? 45 : 40);
+    userState.timeRemainingSeconds = examData.durationMinutes * 60;
 
     document.getElementById("mcq-badge-count").textContent = `${examData.mcqs.length} Qs`;
     document.getElementById("coding-badge-count").textContent = `${examData.coding.length} Qs`;

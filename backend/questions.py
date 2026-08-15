@@ -297,12 +297,14 @@ def get_placement_exam(mode: str = "full") -> dict:
         item["examples"] = c.get("examples", [])
         safe_coding.append(item)
 
+    duration_mins = 40 if mode in ("mcq", "resume") else (45 if mode == "coding" else 60)
+
     return {
         "mcq_questions": safe_mcqs,
         "coding_questions": safe_coding,
         "total_mcqs": len(safe_mcqs),
         "total_coding": len(safe_coding),
-        "duration_minutes": 60
+        "duration_minutes": duration_mins
     }
 
 
