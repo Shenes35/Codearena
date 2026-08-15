@@ -44,9 +44,9 @@ async function initExam() {
   } else if (testMode === "resume") {
     document.getElementById("tab-coding").style.display = "none";
     document.getElementById("coding-palette-container")?.style.setProperty("display", "none", "important");
-    userState.timeRemainingSeconds = 60 * 60; // 60 mins for Resume MCQ test
+    userState.timeRemainingSeconds = 40 * 60; // 40 mins for Resume MCQ test (30 Qs)
     const tabMcqLabel = document.querySelector("#tab-mcq span:first-child");
-    if (tabMcqLabel) tabMcqLabel.textContent = "📄 Resume & AI Engine MCQs";
+    if (tabMcqLabel) tabMcqLabel.textContent = "📄 Section A: MCQs";
     switchTab("mcq");
   } else if (testMode === "coding") {
     document.getElementById("tab-mcq").style.display = "none";
