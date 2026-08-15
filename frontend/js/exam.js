@@ -222,11 +222,23 @@ function parseMarkdownToHtml(markdownText) {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
 
-    return `<div style="margin:14px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:13.5px;color:#38bdf8;line-height:1.6;overflow-x:auto"><code>${formattedCode}</code></pre></div>`;
+    const badge = (lang || 'code').toUpperCase();
+
+    return `<div style="margin:14px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 ${badge} SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:13.5px;color:#38bdf8;line-height:1.6;overflow-x:auto"><code>${formattedCode}</code></pre></div>`;
   });
 
-  // 3. Fallback for unformatted multi-statement code (e.g., "executes: piece.col = origCol; piece.row = origRow; if (targetPiece != null) simpieces.add(targetPiece);")
+  // 3. Detect inline multiline code blocks (e.g. "Consider the snippet from AICoach.java: public static void fetchAdviceAsync...")
+  html = html.replace(/(snippet|Look at [^:\n]+|executes|code):\s*\n?\s*(public static void[\s\S]*?\}|public int[\s\S]*?\}|public boolean[\s\S]*?\}|piece\.col =[\s\S]*?\;|boolean\[\]\[\]\[\][\s\S]*?\;|private static String[\s\S]*?\}|javac -d[\s\S]*?\.java)/gi, (match, prefix, codeText) => {
+    let formattedCode = codeText.trim()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    return `${prefix}:<div style="margin:14px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 JAVA CODE</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:13.5px;color:#38bdf8;line-height:1.6;overflow-x:auto"><code>${formattedCode}</code></pre></div>`;
+  });
+
+  // 4. Fallback for unformatted multi-statement code (e.g., "executes: piece.col = origCol; piece.row = origRow; if (targetPiece != null) simpieces.add(targetPiece);")
   html = html.replace(/(executes|snippet|look at [^:\n]+):\s*([a-zA-Z0-9_\.\s\=\;\(\)\!\{\}\<\>\[\]\+\-\*\/]+;[a-zA-Z0-9_\.\s\=\;\(\)\!\{\}\<\>\[\]\+\-\*\/]*)/gi, (match, prefix, codeText) => {
+    if (html.includes('CODE SNIPPET') || html.includes('JAVA CODE')) return match;
     let statements = codeText.split(';').map(s => s.trim()).filter(Boolean).map(s => s + ';');
     let formattedCode = statements.join('\n')
       .replace(/&/g, "&amp;")
@@ -235,10 +247,16 @@ function parseMarkdownToHtml(markdownText) {
     return `${prefix}:<div style="margin:14px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:13.5px;color:#38bdf8;line-height:1.6;overflow-x:auto"><code>${formattedCode}</code></pre></div>`;
   });
 
-  // 4. Convert single backticks `code` into styled inline code pills
-  html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(99,102,241,0.18);color:#a5b4fc;padding:3px 8px;border-radius:5px;font-family:\'Fira Code\',monospace;font-size:13px;border:1px solid rgba(99,102,241,0.3)">$1</code>');
+  // 5. Auto-highlight Java filenames, method names, and identifiers if not already inside HTML tags
+  const codePillStyle = 'background:rgba(99,102,241,0.18);color:#a5b4fc;padding:3px 8px;border-radius:5px;font-family:\'Fira Code\',monospace;font-size:13px;border:1px solid rgba(99,102,241,0.3)';
+  
+  // Convert explicit single backticks `code` into styled code pills
+  html = html.replace(/`([^`]+)`/g, `<code style="${codePillStyle}">$1</code>`);
 
-  // 5. Convert Markdown bold and headers
+  // Auto-convert Java filenames (e.g., AICoach.java, GamePanel.java, run.ps1) when not inside tags
+  html = html.replace(/\b([a-zA-Z0-9_\-]+\.(java|ps1|xml|json|png|env))\b(?![^<]*>)/gi, `<code style="${codePillStyle}">$1</code>`);
+
+  // 6. Convert Markdown bold and headers
   html = html
     .replace(/### Question/gi, '<div style="font-weight:700;color:var(--exam-accent);margin-top:10px">Problem:</div>')
     .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#fff">$1</strong>')
