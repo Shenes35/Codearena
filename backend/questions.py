@@ -234,10 +234,7 @@ def get_placement_exam(mode: str = "full") -> dict:
     random.shuffle(mcqs)
     random.shuffle(coding)
 
-    if mode == "resume":
-        selected_mcqs = mcqs[:40]
-        selected_coding = []
-    elif mode == "mcq":
+    if mode == "resume" or mode == "mcq":
         selected_mcqs = mcqs[:30]
         selected_coding = []
     elif mode == "coding":
