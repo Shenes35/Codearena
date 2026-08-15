@@ -1973,12 +1973,14 @@ def _seed_placement_mcqs(count: int):
         }
     ]
 
+    import re
     items_to_add = []
     for t in user_mcqs:
+        clean_t = re.sub(r"^Q\d+\s*", "", t["title"])
         items_to_add.append({
             "id": f"pmcq_{uuid.uuid4().hex[:6]}",
             "type": "mcq",
-            "title": t["title"],
+            "title": clean_t,
             "description": t["desc"],
             "options": t["opts"],
             "correct_option": t["correct"],

@@ -204,76 +204,38 @@ function parseMarkdownToHtml(markdownText) {
   
   let html = markdownText;
 
-  // 1. Detect if the text contains code (either with backticks or raw single-line statements)
-  // Match backtick blocks: e.g. ```text ... ``` or ```python ... ``` or raw statements
-  const hasBackticks = /[`\u2018\u2019\u201C\u201D]{2,}/.test(html);
-  
-  if (hasBackticks) {
-    // Extract everything between the backtick markers:
-    html = html.replace(/[`\u2018\u2019\u201C\u201D]{2,}\s*([a-zA-Z]*)([\s\S]*?)[`\u2018\u2019\u201C\u201D]{2,}/gi, (match, lang, code) => {
-      let codeText = code.trim();
+  // 1. Strip Q1, Q48, etc. prefixes if present
+  html = html.replace(/^Q\d+\s*/gi, '');
 
-      // Format code into multiline statements
-      let formattedCode = codeText
-        .replace(/\s*Integer\s+/gi, '\nInteger ')
-        .replace(/\s*Set\s+/gi, '\nSet ')
-        .replace(/\s*Print\s+/gi, '\nPrint ')
-        .replace(/\s*Begin\b/gi, 'Begin\n')
-        .replace(/\s*End\b/gi, '\nEnd')
-        .replace(/\s*def\s+/gi, '\ndef ')
-        .replace(/\s*return\s+/gi, '\n  return ')
-        .replace(/\s*print\s*\(/gi, '\nprint(')
-        .replace(/;\s*/g, ';\n')
-        .replace(/\{\s*/g, '{\n')
-        .replace(/\}\s*/g, '\n}\n')
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 0)
-        .join('\n  ');
+  // 2. Format explicit code blocks with triple backticks ```java ... ``` or ```c ... ``` or ```text ... ```
+  html = html.replace(/```([a-zA-Z]*)\n?([\s\S]*?)```/gi, (match, lang, code) => {
+    let formattedCode = code.trim()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
 
-      const escCode = formattedCode
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+    return `<div style="margin:14px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:13.5px;color:#38bdf8;line-height:1.6;overflow-x:auto"><code>${formattedCode}</code></pre></div>`;
+  });
 
-      return `<div style="margin:16px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:14px;color:#e2e8f0;line-height:1.6;overflow-x:auto"><code>${escCode}</code></pre></div>`;
-    });
-  }
+  // 3. Fallback for unformatted multi-statement code (e.g., "executes: piece.col = origCol; piece.row = origRow; if (targetPiece != null) simpieces.add(targetPiece);")
+  html = html.replace(/(executes|snippet|look at [^:\n]+):\s*([a-zA-Z0-9_\.\s\=\;\(\)\!\{\}\<\>\[\]\+\-\*\/]+;[a-zA-Z0-9_\.\s\=\;\(\)\!\{\}\<\>\[\]\+\-\*\/]*)/gi, (match, prefix, codeText) => {
+    let statements = codeText.split(';').map(s => s.trim()).filter(Boolean).map(s => s + ';');
+    let formattedCode = statements.join('\n')
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    return `${prefix}:<div style="margin:14px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:13.5px;color:#38bdf8;line-height:1.6;overflow-x:auto"><code>${formattedCode}</code></pre></div>`;
+  });
 
-  // Fallback for code without backticks
-  if (!html.includes('CODE SNIPPET') && /(def func|int main|public class|Begin|Set A =)/i.test(html)) {
-    html = html.replace(/(def func[\s\S]*|int main\s*\([^)]*\)[\s\S]*\}|public class[\s\S]*\}|Begin[\s\S]*End)/i, (codeMatch) => {
-      let formattedCode = codeMatch
-        .replace(/\s*Integer\s+/gi, '\nInteger ')
-        .replace(/\s*Set\s+/gi, '\nSet ')
-        .replace(/\s*Print\s+/gi, '\nPrint ')
-        .replace(/\s*Begin\b/gi, 'Begin\n')
-        .replace(/\s*End\b/gi, '\nEnd')
-        .replace(/\s*def\s+/gi, '\ndef ')
-        .replace(/\s*return\s+/gi, '\n  return ')
-        .replace(/\s*print\s*\(/gi, '\nprint(')
-        .replace(/;\s*/g, ';\n')
-        .replace(/\{\s*/g, '{\n')
-        .replace(/\}\s*/g, '\n}\n')
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 0)
-        .join('\n  ');
+  // 4. Convert single backticks `code` into styled inline code pills
+  html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(99,102,241,0.18);color:#a5b4fc;padding:3px 8px;border-radius:5px;font-family:\'Fira Code\',monospace;font-size:13px;border:1px solid rgba(99,102,241,0.3)">$1</code>');
 
-      const escCode = formattedCode
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-      return `<div style="margin:16px 0;border:1px solid rgba(99,102,241,0.4);border-radius:8px;overflow:hidden"><div style="background:#1e293b;padding:6px 14px;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(99,102,241,0.3)">💻 CODE SNIPPET</div><pre style="background:#0f172a;padding:14px 18px;margin:0;font-family:'Fira Code',monospace;font-size:14px;color:#e2e8f0;line-height:1.6;overflow-x:auto"><code>${escCode}</code></pre></div>`;
-    });
-  }
-
-  // Strip out any unhandled triple backticks or weird ``` text remnants
+  // 5. Convert Markdown bold and headers
   html = html
-    .replace(/```[a-z]*/gi, "")
-    .replace(/```/g, "")
     .replace(/### Question/gi, '<div style="font-weight:700;color:var(--exam-accent);margin-top:10px">Problem:</div>')
     .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#fff">$1</strong>')
-    .replace(/\n\n/g, '<br/>');
+    .replace(/\n\n/g, '<br/><br/>')
+    .replace(/\n/g, '<br/>');
 
   return html;
 }
@@ -282,11 +244,13 @@ function renderCurrentMcq() {
   if (!examData.mcqs.length) return;
   const q = examData.mcqs[userState.currentMcqIdx];
 
+  const cleanTitle = (q.title || "").replace(/^Q\d+\s*/i, "");
+
   document.getElementById("mcq-num-display").textContent = `Question ${userState.currentMcqIdx + 1} of ${examData.mcqs.length}`;
   document.getElementById("mcq-diff-display").textContent = q.difficulty || "Medium";
   
   const titleElem = document.getElementById("mcq-title-display");
-  const rawText = `**${q.title}**\n\n${q.description}`;
+  const rawText = `**${cleanTitle}**\n\n${q.description}`;
   const formattedText = formatMcqCodeBlocks(rawText);
   titleElem.innerHTML = parseMarkdownToHtml(formattedText);
 
